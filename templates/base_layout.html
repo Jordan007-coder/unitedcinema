@@ -1,0 +1,32 @@
+{% load static from static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Film list</title>
+	<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+</head>
+<body>
+	<div class='wrapper'>
+		<a href="{% url 'films:list' %}">Logo</a>
+		<nav>
+			<ul>
+				{% if user.is_authenticated %}
+				<li>
+					<form class='logout-link' action="{% url 'accounts:logout' %}" method='POST'>
+						{% csrf_token %}
+						<button type="submit">Logout</button>
+					</form>
+				</li>
+				<li><a href="{% url 'films:create' %}">Create new film</a></li>
+				{% else %}
+				<li><a href="{% url 'accounts:login' %}">Login</a></li>
+				<li><a href='{% url "accounts:signup" %}'>Signup</a></li>
+				{% endif %}
+			</ul>
+		</nav>
+		{% block content %}
+		{% endblock %}
+	</div>
+</body>
+</html>

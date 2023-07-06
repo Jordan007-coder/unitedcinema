@@ -1,0 +1,15 @@
+{% extends 'base_layout.html' %}
+
+{% block content %}
+<h1>This is the list of Films</h1>
+	<div class='films'>
+		{% for film in films %}
+		<div classe='film'>
+			<h2><a href="{% url 'films:details' slug=film.slug %}"> {{ film.title }}</a></h2>
+			<p>{{ film.synopsis }}</p>
+			<p>{{ film.genre }}</p>
+			<p>{{ film.date }}</p>
+		</div>
+		{% endfor %}
+	</div>
+{% endblock %}
