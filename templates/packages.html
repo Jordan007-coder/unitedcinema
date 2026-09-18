@@ -1,0 +1,985 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Packages & Formules Tout-en-Un | United Hotel & Cinéma Mbankomo{% endblock %}
+
+{% block content %}
+<!-- =========================================================================
+     HERO SECTION : PACKAGES & OFFRES SPÉCIALES
+     ========================================================================= -->
+<section class="packages-hero-section">
+  <div class="packages-hero-backdrop"></div>
+  <div class="container packages-hero-content">
+    <div class="packages-hero-badge">
+      <span>✨ UNITED HOTEL ★★★★ & CINEMA MBANKOMO</span>
+    </div>
+    <h1 class="packages-hero-title">
+      Découvrez nos <span class="gold-gradient-text">Différents Packages</span>
+    </h1>
+    <p class="packages-hero-subtitle">
+      Vivez une expérience inoubliable aux portes de Yaoundé : Piscine, Cinéma Dolby 3D, Billard, Sport, Hammam/Sauna, Massages relaxants, Réalité Virtuelle et Navette aller-retour !
+    </p>
+
+    <!-- Quick Navigation Anchors -->
+    <div class="packages-quick-nav">
+      <a href="#section-loisir" class="quick-nav-chip active">
+        <span>🎮 Packages Loisirs & Évasion</span>
+        <span class="chip-price">Dès 5 000 FCFA</span>
+      </a>
+      <a href="#section-spa" class="quick-nav-chip">
+        <span>🧖‍♀️ Packages Beauté, Spa & Bien-être</span>
+        <span class="chip-price">Dès 7 000 FCFA</span>
+      </a>
+      <a href="#section-weekend" class="quick-nav-chip">
+        <span>🏨 Week-end Détente (02 Nuitées)</span>
+        <span class="chip-price">Dès 130 000 XFA</span>
+      </a>
+      <button type="button" class="quick-nav-chip chip-reserve-all" onclick="openPackageReservationModal('package-loisir')">
+        <span>⚡ Réservation Express WhatsApp</span>
+      </button>
+    </div>
+
+    <!-- Contact & Slogan banner -->
+    <div class="packages-hero-info-strip">
+      <div class="info-strip-item">
+        <span class="info-strip-icon">📍</span>
+        <span>Mbankomo - Centre Administratif</span>
+      </div>
+      <div class="info-strip-divider">•</div>
+      <div class="info-strip-item">
+        <span class="info-strip-icon">📞</span>
+        <a href="tel:+237680522222">(+237) 680 52 22 22</a> / <a href="tel:+237222315900">222 31 59 00</a>
+      </div>
+      <div class="info-strip-divider">•</div>
+      <div class="info-strip-item slogan-highlight">
+        <span>« Profitez de la différence !!! »</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     SECTION 1 : PACKAGES LOISIRS & ÉVASION (FLYER 1)
+     ========================================================================= -->
+<section class="section-row packages-category-row" id="section-loisir">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Divertissement & Sensations</span>
+      <h2 class="section-title">
+        Packages <strong class="brand-green">Loisirs</strong> & <strong class="brand-gold">Évasion</strong>
+      </h2>
+      <p class="section-subtitle">
+        Piscine, grand écran de cinéma, billard, terrains de sport, babyfoot, réalité virtuelle et transport tout compris.
+      </p>
+    </div>
+
+    <div class="packages-showcase-grid">
+      <!-- Left: Interactive Flyer 1 Card -->
+      <div class="flyer-display-column">
+        <div class="flyer-card-wrapper">
+          <div class="flyer-card-header">
+            <div class="flyer-header-badge">Affiche Officielle</div>
+            <h3 class="flyer-header-title">Flyer Packages Loisirs</h3>
+          </div>
+          <div class="flyer-image-container" onclick="openFlyerLightbox('{% static 'images/packages/flyer_loisir_evasion.jpg' %}', 'Affiche Officielle - Packages Loisir & Évasion')">
+            <img src="{% static 'images/packages/flyer_loisir_evasion.jpg' %}" alt="Flyer Packages Loisir et Evasion - United Hotel & Cinéma" class="flyer-image-preview">
+            <div class="flyer-hover-overlay">
+              <span class="flyer-zoom-icon">🔍</span>
+              <span class="flyer-zoom-text">Cliquer pour agrandir</span>
+            </div>
+          </div>
+          <div class="flyer-card-footer">
+            <button type="button" class="btn-flyer-zoom" onclick="openFlyerLightbox('{% static 'images/packages/flyer_loisir_evasion.jpg' %}', 'Affiche Officielle - Packages Loisir & Évasion')">
+              <span>🔍 Agrandir le flyer</span>
+            </button>
+            <a href="{% static 'images/packages/flyer_loisir_evasion.jpg' %}" download="United_Packages_Loisirs.jpg" class="btn-flyer-download" title="Télécharger l'affiche">
+              <span>📥 Télécharger</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Package Cards (Loisir & Évasion) -->
+      <div class="packages-cards-column">
+        <div class="package-cards-stack">
+          {% for pkg in loisir_packages %}
+          <div class="package-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.id }}">
+            <div class="package-card-top">
+              <div class="package-badge-wrap">
+                <span class="package-badge-tag {% if pkg.highlight %}badge-gold{% else %}badge-green{% endif %}">
+                  {{ pkg.badge }}
+                </span>
+                {% if pkg.transport_included %}
+                <span class="package-mini-badge">🚌 Navette Incluse</span>
+                {% endif %}
+              </div>
+              <h3 class="package-title">{{ pkg.name }}</h3>
+              <p class="package-tagline">{{ pkg.tagline }}</p>
+            </div>
+
+            <div class="package-pricing-block">
+              <div class="price-value-wrap">
+                <span class="price-currency-figure">{{ pkg.price_display }}</span>
+                <span class="price-period">/ personne</span>
+              </div>
+              <div class="price-subtitle">Accès complet à toutes les activités listées ci-dessous</div>
+            </div>
+
+            <div class="package-features-block">
+              <div class="features-label">Prestations et activités incluses :</div>
+              <ul class="package-features-list">
+                {% for f in pkg.features %}
+                <li class="package-feature-item {% if f.vip %}feature-vip{% endif %}">
+                  <div class="feature-icon-box">{{ f.icon }}</div>
+                  <div class="feature-text-content">
+                    <strong class="feature-name">{{ f.name }}</strong>
+                    <span class="feature-desc">{{ f.desc }}</span>
+                  </div>
+                  <span class="feature-check-mark">✓</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="package-card-actions">
+              <button type="button" class="btn-package-reserve" onclick="openPackageReservationModal('{{ pkg.id }}')">
+                <span class="btn-res-icon">🎟️</span>
+                <span>Réserver ce Package ({{ pkg.price_display }})</span>
+              </button>
+              
+              <div class="package-secondary-actions">
+                <a href="https://wa.me/237680522222?text=Bonjour%20United%20Hotel%20%26%20Cin%C3%A9ma%2C%20je%20souhaite%20r%C3%A9server%20le%20*{{ pkg.name|urlencode }}*%20({{ pkg.price_display|urlencode }}%20par%20personne).%20Merci%20de%20m%27indiquer%20les%20disponibilit%C3%A9s." target="_blank" rel="noopener" class="btn-package-wa" title="Réserver directement sur WhatsApp">
+                  <span>💬 WhatsApp</span>
+                </a>
+                <a href="tel:+237680522222" class="btn-package-call" title="Appeler pour réserver">
+                  <span>📞 Appeler</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     SECTION 2 : PACKAGES BEAUTÉ, SPA & BIEN-ÊTRE (FLYER 2)
+     ========================================================================= -->
+<section class="section-row row-bg-mint packages-category-row" id="section-spa">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag gold">Bien-être, Détente & Sérénité</span>
+      <h2 class="section-title">
+        Packages <strong class="brand-green">Beauté & Spa</strong> à Prix Doux
+      </h2>
+      <p class="section-subtitle">
+        « Profitez de la beauté à prix doux à United Hôtel & Cinéma ! » — Hammam, sauna détoxifiant, piscine, fitness et massages professionnels.
+      </p>
+    </div>
+
+    <!-- Transport Notification Banner -->
+    <div class="packages-notice-box">
+      <div class="notice-icon">🚌</div>
+      <div class="notice-content">
+        <strong>Information Navette & Transport :</strong>
+        <span>{{ transport_note }}</span>
+      </div>
+    </div>
+
+    <div class="packages-showcase-grid reverse-on-mobile">
+      <!-- Left: 3 Spa Package Cards Grid -->
+      <div class="packages-cards-column">
+        <div class="spa-cards-grid">
+          {% for pkg in spa_packages %}
+          <div class="package-card spa-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.id }}">
+            <div class="package-card-top">
+              <div class="package-badge-wrap">
+                <span class="package-badge-tag {% if pkg.highlight %}badge-gold{% else %}badge-green{% endif %}">
+                  {{ pkg.badge }}
+                </span>
+                <span class="package-mini-badge">🚌 Navette Incluse</span>
+              </div>
+              <h3 class="package-title">{{ pkg.name }}</h3>
+              <div class="package-subtitle-note">{{ pkg.subtitle }}</div>
+              <p class="package-tagline">{{ pkg.tagline }}</p>
+            </div>
+
+            <div class="package-pricing-block">
+              <div class="price-value-wrap">
+                <span class="price-currency-figure">{{ pkg.price_display }}</span>
+                <span class="price-period">/ personne</span>
+              </div>
+              <div class="price-subtitle">Formule spa & remise en forme complète</div>
+            </div>
+
+            <div class="package-features-block">
+              <ul class="package-features-list">
+                {% for f in pkg.features %}
+                <li class="package-feature-item {% if f.vip %}feature-vip{% endif %}">
+                  <div class="feature-icon-box">{{ f.icon }}</div>
+                  <div class="feature-text-content">
+                    <strong class="feature-name">{{ f.name }}</strong>
+                    <span class="feature-desc">{{ f.desc }}</span>
+                  </div>
+                  <span class="feature-check-mark">✓</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <div class="package-card-actions">
+              <button type="button" class="btn-package-reserve" onclick="openPackageReservationModal('{{ pkg.id }}')">
+                <span class="btn-res-icon">🎟️</span>
+                <span>Réserver ce Pack ({{ pkg.price_display }})</span>
+              </button>
+              
+              <div class="package-secondary-actions">
+                <a href="https://wa.me/237680522222?text=Bonjour%20United%20Hotel%20%26%20Cin%C3%A9ma%2C%20je%20souhaite%20r%C3%A9server%20le%20*{{ pkg.name|urlencode }}%20-%20{{ pkg.subtitle|urlencode }}*%20({{ pkg.price_display|urlencode }}%20par%20personne).%20Merci%20de%20m%27indiquer%20les%20disponibilit%C3%A9s." target="_blank" rel="noopener" class="btn-package-wa" title="Réserver sur WhatsApp">
+                  <span>💬 WhatsApp</span>
+                </a>
+                <a href="tel:+237680522222" class="btn-package-call" title="Appeler pour réserver">
+                  <span>📞 Appeler</span>
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Right: Interactive Flyer 2 Card -->
+      <div class="flyer-display-column">
+        <div class="flyer-card-wrapper sticky-flyer">
+          <div class="flyer-card-header">
+            <div class="flyer-header-badge gold">Affiche Officielle Spa</div>
+            <h3 class="flyer-header-title">Flyer Beauté à Prix Doux</h3>
+          </div>
+          <div class="flyer-image-container" onclick="openFlyerLightbox('{% static 'images/packages/flyer_beaute_spa.jpg' %}', 'Affiche Officielle - Formules Beauté, Spa & Bien-être')">
+            <img src="{% static 'images/packages/flyer_beaute_spa.jpg' %}" alt="Flyer Beauté à Prix Doux - United Hotel & Cinéma" class="flyer-image-preview">
+            <div class="flyer-hover-overlay">
+              <span class="flyer-zoom-icon">🔍</span>
+              <span class="flyer-zoom-text">Cliquer pour agrandir</span>
+            </div>
+          </div>
+          <div class="flyer-card-footer">
+            <button type="button" class="btn-flyer-zoom" onclick="openFlyerLightbox('{% static 'images/packages/flyer_beaute_spa.jpg' %}', 'Affiche Officielle - Formules Beauté, Spa & Bien-être')">
+              <span>🔍 Agrandir le flyer</span>
+            </button>
+            <a href="{% static 'images/packages/flyer_beaute_spa.jpg' %}" download="United_Packages_Beaute_Spa.jpg" class="btn-flyer-download" title="Télécharger l'affiche">
+              <span>📥 Télécharger</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     SECTION 3 : PACKAGES WEEK-END DÉTENTE (02 NUITÉES - FLYER 3)
+     ========================================================================= -->
+<section class="section-row packages-category-row" id="section-weekend" style="background: #f4fbf4;">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag gold">
+        🏨 Séjour & Détente Hôtel ★★★★
+      </span>
+      <h2 class="section-title">
+        Package <strong class="brand-green">Week-end Détente</strong> <strong class="brand-gold">(02 Nuitées)</strong>
+      </h2>
+      <p class="section-subtitle">
+        « Profitez de la différence !!! » — Vendredi, Samedi & Dimanche : Chambre standard + Repas complets + Piscine + Cinéma Dolby + Fitness + Soin Coup d'éclat.
+      </p>
+    </div>
+
+    <!-- No transport notice banner -->
+    <div class="packages-notice-box" style="background: #eef7ee; border-color: #cde6cb; color: #235c20;">
+      <div class="notice-icon">🏨</div>
+      <div class="notice-content">
+        <strong>Formule Séjour & Hébergement à Mbankomo :</strong>
+        <span>Séjour directement au Complexe United Hôtel ★★★★ (Vendredi au Dimanche - 02 nuitées). Formule sans navette requise.</span>
+      </div>
+    </div>
+
+    <div class="packages-showcase-grid">
+      <!-- Left: Interactive Flyer 3 Card -->
+      <div class="flyer-display-column">
+        <div class="flyer-card-wrapper sticky-flyer">
+          <div class="flyer-card-header">
+            <div class="flyer-header-badge" style="background: linear-gradient(135deg, #1b8100 0%, #0d5200 100%);">Affiche Week-end Détente</div>
+            <h3 class="flyer-header-title">Flyer Officiel Détente 02 Nuitées</h3>
+          </div>
+          <div class="flyer-image-container" onclick="openFlyerLightbox('{% static 'images/packages/flyer_weekend_detente.jpg' %}', 'Affiche Officielle - Week-end Détente 02 Nuitées')">
+            <img src="{% static 'images/packages/flyer_weekend_detente.jpg' %}" alt="Flyer Week-end Détente - United Hotel & Cinéma" class="flyer-image-preview">
+            <div class="flyer-hover-overlay">
+              <span class="flyer-zoom-icon">🔍</span>
+              <span class="flyer-zoom-text">Cliquer pour agrandir</span>
+            </div>
+          </div>
+          <div class="flyer-card-footer">
+            <button type="button" class="btn-flyer-zoom" onclick="openFlyerLightbox('{% static 'images/packages/flyer_weekend_detente.jpg' %}', 'Affiche Officielle - Week-end Détente 02 Nuitées')">
+              <span>🔍 Agrandir le flyer</span>
+            </button>
+            <a href="{% static 'images/packages/flyer_weekend_detente.jpg' %}" download="United_Package_Weekend_Detente.jpg" class="btn-flyer-download" title="Télécharger l'affiche">
+              <span>📥 Télécharger</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Main Card with Inclusions and 6 Tiers Grid -->
+      <div class="packages-cards-column">
+        <div class="package-card package-card-highlighted" id="card-weekend-detente">
+          <div class="package-card-top">
+            <div class="package-badge-wrap">
+              <span class="package-badge-tag badge-gold">
+                ⭐ Offre Séjour Promotionnelle
+              </span>
+              <span class="package-mini-badge" style="background: #e8f5e9; color: #1b8100;">
+                🛏️ 02 Nuitées (Ven - Sam - Dim)
+              </span>
+            </div>
+            <h3 class="package-title">WEEK-END DÉTENTE</h3>
+            <p class="package-tagline">Chambre standard + repas + piscine + cinéma + fitness + coup d'éclat</p>
+          </div>
+
+          <!-- Included items summary -->
+          <div class="package-features-block" style="margin-top: 1rem;">
+            <div class="features-label">Toutes les prestations incluses dans votre formule :</div>
+            <ul class="package-features-list">
+              {% for f in weekend_detente.features %}
+              <li class="package-feature-item {% if f.vip %}feature-vip{% endif %}">
+                <div class="feature-icon-box">{{ f.icon }}</div>
+                <div class="feature-text-content">
+                  <strong class="feature-name">{{ f.name }}</strong>
+                  <span class="feature-desc">{{ f.desc }}</span>
+                </div>
+                <span class="feature-check-mark">✓</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Pricing Tiers Grid -->
+          <div style="margin-top: 1.5rem;">
+            <div class="features-label" style="margin-bottom: 0.75rem;">Choisissez votre formule selon le nombre de personnes :</div>
+            <div class="weekend-pricing-grid">
+              {% for tier in weekend_detente.tiers %}
+              <div class="weekend-tier-card {% if tier.highlight %}tier-highlight{% endif %}">
+                {% if tier.highlight %}
+                <span class="tier-badge">⭐ Best-Seller</span>
+                {% endif %}
+                <div>
+                  <div class="tier-title">{{ tier.title }}</div>
+                  <div class="tier-desc">{{ tier.desc }}</div>
+                </div>
+                <div>
+                  <div class="tier-price">{{ tier.price_display }}</div>
+                  <button type="button" class="btn-tier-select" onclick="openPackageReservationModal('{{ tier.id }}')" style="width: 100%; margin-top: 0.5rem;">
+                    <span>🎟️ Réserver ({{ tier.price_display }})</span>
+                  </button>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- General Direct Action -->
+          <div class="package-card-actions" style="margin-top: 1.5rem;">
+            <button type="button" class="btn-package-reserve" onclick="openPackageReservationModal('weekend-couple')">
+              <span class="btn-res-icon">🏨</span>
+              <span>Réserver le Week-end Détente (Dès 130 000 XFA)</span>
+            </button>
+            <div class="package-secondary-actions">
+              <a href="https://wa.me/237680522222?text=Bonjour%20United%20Hotel%20%26%20Cin%C3%A9ma%2C%20je%20souhaite%20r%C3%A9server%20le%20*Package%20Week-end%20D%C3%A9tente%20(02%20Nuit%C3%A9es)*.%20Merci%20de%20m%27indiquer%20les%20disponibilit%C3%A9s." target="_blank" rel="noopener" class="btn-package-wa" title="Réserver sur WhatsApp">
+                <span>💬 WhatsApp</span>
+              </a>
+              <a href="tel:+237680522222" class="btn-package-call" title="Appeler pour réserver">
+                <span>📞 Appeler</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     BOTTOM CONTACT & ASSISTANCE STRIP
+     ========================================================================= -->
+<section class="packages-bottom-cta-section">
+  <div class="container">
+    <div class="bottom-cta-box">
+      <div class="cta-text-side">
+        <span class="cta-mini-tag">Réservation Groupe & Événements Privés</span>
+        <h3 class="cta-title">Vous organisez une sortie de groupe ou un anniversaire ?</h3>
+        <p class="cta-desc">
+          Notre équipe vous concocte un programme sur-mesure combinant cinéma, piscine, espace jeux, restauration et transport dédié. Contactez directement notre service réservation.
+        </p>
+      </div>
+      <div class="cta-buttons-side">
+        <button type="button" class="btn-cta-main" onclick="openPackageReservationModal('package-evasion')">
+          <span>🎟️ Réserver un Package</span>
+        </button>
+        <a href="https://wa.me/237680522222?text=Bonjour%20United%20Hotel%20%26%20Cin%C3%A9ma%2C%20je%20souhaite%20des%20informations%20pour%20un%20groupe%20%2F%20%C3%A9v%C3%A9nement%20sp%C3%A9cial." target="_blank" rel="noopener" class="btn-cta-wa">
+          <span>💬 Échanger sur WhatsApp</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================================
+     MODAL DE RÉSERVATION DÉDIÉ AUX PACKAGES (AVEC CALCUL DIRECT & WHATSAPP)
+     ========================================================================= -->
+<div class="reservation-modal-backdrop" id="packageReservationModal" role="dialog" aria-modal="true" aria-labelledby="pkgModalTitle">
+  <div class="reservation-modal-dialog">
+    <div class="reservation-modal-header">
+      <span class="reservation-badge-tag">⚡ Réservation Package & Loisirs</span>
+      <h3 class="reservation-modal-title" id="pkgModalTitle">
+        <span>🎁 Réserver votre Package</span>
+      </h3>
+      <p class="reservation-modal-subtitle">
+        Sélectionnez votre formule, le nombre de personnes, la date et le point de départ. Confirmation immédiate sur WhatsApp (<strong>680 52 22 22</strong>).
+      </p>
+      <button type="button" class="reservation-modal-close" onclick="closePackageReservationModal()" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <div class="reservation-modal-body">
+      <!-- 1. Package Selection Dropdown -->
+      <div class="res-group">
+        <label class="res-label" for="pkgSelect">
+          <span>🎁 Formule ou Package Souhaité</span>
+          <span class="res-label-hint">Menu déroulant</span>
+        </label>
+        <select id="pkgSelect" class="res-select" onchange="onPackageSelectChange()">
+          <optgroup label="🎮 Loisirs & Évasion">
+            <option value="package-loisir" data-price="5000" data-name="PACKAGE LOISIR" data-transport="0">
+              PACKAGE LOISIR — 5 000 FCFA / pers. (Piscine, Cinéma, Billard, Sport, Babyfoot - Sans transport)
+            </option>
+            <option value="package-evasion" data-price="10000" data-name="PACKAGE ÉVASION" data-transport="1">
+              PACKAGE ÉVASION — 10 000 FCFA / pers. (Piscine, Cinéma, Billard, Sport, Babyfoot, VR + Navette A/R dès 8 pers.)
+            </option>
+          </optgroup>
+          <optgroup label="🧖‍♀️ Beauté, Spa & Bien-être">
+            <option value="pack-1" data-price="7000" data-name="PACK I (Vitalité)" data-transport="1">
+              PACK I — 7 000 FCFA / pers. (Fitness, Hammam/Sauna, Navette A/R dès 8 pers.)
+            </option>
+            <option value="pack-2" data-price="10000" data-name="PACK II (Fraîcheur & Bien-être)" data-transport="1">
+              PACK II — 10 000 FCFA / pers. (Piscine, Hammam/Sauna, Fitness, Navette A/R dès 8 pers.)
+            </option>
+            <option value="pack-3" data-price="15000" data-name="PACK III (Sérénité & VIP Massage)" data-transport="1">
+              PACK III — 15 000 FCFA / pers. (Fitness, Hammam/Sauna, Massage, Navette A/R dès 8 pers.)
+            </option>
+          </optgroup>
+          <optgroup label="🏨 Week-end Détente (02 Nuitées - Hôtel ★★★★)">
+            <option value="weekend-single" data-price="130000" data-name="WEEK-END DÉTENTE — SINGLE (1 pers.)" data-transport="0" data-fixed="1" data-weekend="1">
+              Single (1 pers.) — 130 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat)
+            </option>
+            <option value="weekend-couple" data-price="175000" data-name="WEEK-END DÉTENTE — COUPLE (2 pers.)" data-transport="0" data-fixed="2" data-weekend="1" selected>
+              Couple (2 pers.) — 175 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat) ⭐
+            </option>
+            <option value="weekend-famille-3" data-price="225000" data-name="WEEK-END DÉTENTE — FAMILLE 3 PERS." data-transport="0" data-fixed="3" data-weekend="1">
+              Famille de 03 pers. — 225 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat)
+            </option>
+            <option value="weekend-famille-4" data-price="350000" data-name="WEEK-END DÉTENTE — FAMILLE 4 PERS." data-transport="0" data-fixed="4" data-weekend="1">
+              Famille de 04 pers. — 350 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat)
+            </option>
+            <option value="weekend-famille-5" data-price="395000" data-name="WEEK-END DÉTENTE — FAMILLE 5 PERS." data-transport="0" data-fixed="5" data-weekend="1">
+              Famille de 05 pers. — 395 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat)
+            </option>
+            <option value="weekend-famille-6" data-price="515000" data-name="WEEK-END DÉTENTE — FAMILLE 6 PERS." data-transport="0" data-fixed="6" data-weekend="1">
+              Famille de 06 pers. — 515 000 XFA (Chambre, Repas, Piscine, Ciné, Fitness, Coup d'éclat)
+            </option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- 2. Persons Counter -->
+      <div class="res-group" id="pkgPeopleGroup">
+        <label class="res-label">
+          <span>👥 Nombre de Participants</span>
+          <span class="res-label-hint" id="pkgPeopleHint">Personnes</span>
+        </label>
+        <div class="res-counter-card" style="max-width: 100%;">
+          <div class="res-counter-header">
+            <span class="res-counter-title" id="pkgSelectedNameDisplay">PACKAGE LOISIR</span>
+            <span class="res-counter-rate" id="pkgUnitRateDisplay">5 000 FCFA / pers.</span>
+          </div>
+          <div class="res-seat-counter-wrap" id="pkgSeatCounterWrap">
+            <button type="button" class="res-seat-btn" onclick="changePkgPeopleCount(-1)" id="btnPkgMinus" aria-label="Moins de participants">−</button>
+            <div class="res-seat-display-box">
+              <span class="res-seat-count-num" id="pkgPeopleDisplay">1</span>
+              <span class="res-seat-count-label" id="pkgPeopleLabel">personne</span>
+            </div>
+            <button type="button" class="res-seat-btn" onclick="changePkgPeopleCount(1)" id="btnPkgPlus" aria-label="Plus de participants">+</button>
+          </div>
+        </div>
+
+        <!-- Quick counter chips -->
+        <div class="res-quick-chips" id="pkgQuickChips">
+          <span style="font-size: 0.8rem; color: #666; font-weight: 600;">Sélection rapide :</span>
+          <button type="button" class="res-chip" onclick="setPkgPeopleCount(1)">1 pers.</button>
+          <button type="button" class="res-chip" onclick="setPkgPeopleCount(2)">2 pers.</button>
+          <button type="button" class="res-chip" onclick="setPkgPeopleCount(4)">4 pers.</button>
+          <button type="button" class="res-chip" onclick="setPkgPeopleCount(8)">8 pers. (Groupe Navette)</button>
+          <button type="button" class="res-chip" onclick="setPkgPeopleCount(12)">12 pers.</button>
+        </div>
+      </div>
+
+      <!-- 3. Date & Time -->
+      <div class="res-group">
+        <label class="res-label" for="pkgDateInput">
+          <span>📅 Date Souhaitée</span>
+          <span class="res-label-hint">Jour de votre visite ou début du séjour</span>
+        </label>
+        <div class="res-date-time-grid">
+          <div>
+            <input type="date" id="pkgDateInput" class="res-input">
+          </div>
+          <div>
+            <select id="pkgTimeSlot" class="res-select">
+              <option value="Après-midi (dès 14h00)" selected>Après-midi (dès 14h00)</option>
+              <option value="Matinée (dès 10h00)">Matinée (dès 10h00)</option>
+              <option value="Soirée & Cinéma (dès 17h30)">Soirée & Cinéma (dès 17h30)</option>
+              <option value="Journée Complète">Journée Complète</option>
+              <option value="Séjour Week-end (02 Nuitées)">Séjour Week-end (02 Nuitées)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Transport Option (Masqué pour Package Loisir et Week-end Détente, visible pour Évasion et Spa) -->
+      <div class="res-group" id="pkgTransportGroup" style="display: none;">
+        <label class="res-label" for="pkgPickupSelect">
+          <span>🚌 Transport / Navette Aller-Retour</span>
+          <span class="res-label-hint">Point de ramassage</span>
+        </label>
+        <select id="pkgPickupSelect" class="res-select" onchange="onPickupSelectChange()">
+          <option value="Hippodrome (United Hotel International)">Hippodrome (United Hotel International)</option>
+          <option value="Poste centrale (Pharmacie la Moisson)">Poste centrale (Pharmacie la Moisson)</option>
+          <option value="Ahala-barrière (Santa Lucia)">Ahala-barrière (Santa Lucia)</option>
+          <option value="Autre">Autre (préciser mon lieu de ramassage)</option>
+          <option value="Directement sur place à Mbankomo (Sans navette)">Directement sur place à Mbankomo (Sans navette)</option>
+        </select>
+        
+        <!-- Field to specify custom pickup location if Autre is selected -->
+        <div id="pkgCustomPickupGroup" style="display: none; margin-top: 0.75rem;">
+          <label class="res-label" for="pkgCustomPickupInput" style="font-size: 0.85rem; color: #2b4c1e; margin-bottom: 0.35rem;">
+            <span>📍 Précisez l'endroit où vous souhaitez être récupéré(e) :</span>
+          </label>
+          <input type="text" id="pkgCustomPickupInput" class="res-input" placeholder="Ex: Bastos, Rond-point Nlongkak, Mendong, etc.">
+        </div>
+
+        <div class="transport-subtext" id="pkgTransportNotice" style="font-size: 0.85rem; color: #856404; background: #fff3cd; border: 1px solid #ffeeba; padding: 0.55rem 0.85rem; border-radius: 8px; margin-top: 0.5rem; font-weight: 600;">
+          ⚠️ <strong>NB :</strong> Le transport est assuré à partir de 8 personnes !
+        </div>
+      </div>
+
+      <!-- 5. Customer Name & Phone -->
+      <div class="res-group">
+        <label class="res-label" for="pkgCustomerName">
+          <span>👤 Vos Coordonnées</span>
+          <span class="res-label-hint">Nom obligatoire pour la réservation</span>
+        </label>
+        <div class="res-identity-grid">
+          <div>
+            <input type="text" id="pkgCustomerName" class="res-input" placeholder="Votre Nom & Prénom *" required>
+            <span class="res-error-msg" id="pkgNameError" style="display: none; color: #dc3545; font-size: 0.8rem; margin-top: 0.25rem;">Veuillez indiquer votre nom.</span>
+          </div>
+          <div>
+            <input type="tel" id="pkgCustomerPhone" class="res-input" placeholder="Numéro de téléphone (optionnel)">
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Price Summary Box -->
+      <div class="res-price-summary-box">
+        <div class="res-price-breakdown">
+          <span class="res-calc-label" id="pkgPriceCalculation">1 personne × 5 000 FCFA</span>
+          <span class="res-total-seats" id="pkgTotalPeopleLabel">Total : 1 personne</span>
+        </div>
+        <div class="res-price-total-wrap">
+          <span class="res-total-label">Montant Total Estimé :</span>
+          <span class="res-total-amount" id="pkgPriceTotal">5 000 FCFA</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reservation-modal-footer">
+      <button type="button" class="btn-res-cancel" onclick="closePackageReservationModal()">
+        <span>✕ Annuler</span>
+      </button>
+      <button type="button" class="btn-res-confirm-wa" onclick="submitPackageReservationToWhatsApp()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.27-2.42 5.82a8.188 8.188 0 0 1-5.82 2.42c-1.44 0-2.85-.38-4.08-1.11l-.29-.17-3.12.82.83-3.04-.19-.3a8.182 8.182 0 0 1-1.25-4.44c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+        </svg>
+        <span>Envoyer la Réservation sur WhatsApp</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL LIGHTBOX POUR AGRANDIR LES FLYERS
+     ========================================================================= -->
+<div class="flyer-lightbox-backdrop" id="flyerLightbox" role="dialog" aria-modal="true" onclick="closeFlyerLightbox(event)">
+  <div class="flyer-lightbox-container">
+    <div class="flyer-lightbox-header">
+      <h4 id="lightboxTitle">Affiche Officielle United Hotel & Cinéma</h4>
+      <button type="button" class="flyer-lightbox-close" onclick="closeFlyerLightbox(event)" aria-label="Fermer">✕</button>
+    </div>
+    <div class="flyer-lightbox-img-wrap">
+      <img id="lightboxImage" src="" alt="Affiche en grand format">
+    </div>
+    <div class="flyer-lightbox-footer">
+      <a id="lightboxDownloadBtn" href="" download class="btn-flyer-download" target="_blank" rel="noopener">
+        <span>📥 Télécharger l'image en haute résolution</span>
+      </a>
+      <button type="button" class="btn-flyer-zoom" onclick="closeFlyerLightbox(event)">
+        <span>Fermer</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     JAVASCRIPT SPÉCIFIQUE À LA PAGE DES PACKAGES
+     ========================================================================= -->
+<script>
+  let pkgPeopleCount = 1;
+  let currentPkgPrice = 5000;
+  let currentPkgName = "PACKAGE LOISIR";
+  let isWeekendPackage = false;
+
+  function initPackageModalDates() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const dateInput = document.getElementById('pkgDateInput');
+    if (dateInput && !dateInput.value) {
+      dateInput.min = `${yyyy}-${mm}-${dd}`;
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function openPackageReservationModal(pkgId) {
+    const modal = document.getElementById('packageReservationModal');
+    const select = document.getElementById('pkgSelect');
+
+    initPackageModalDates();
+
+    if (pkgId && select) {
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === pkgId) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    onPackageSelectChange();
+
+    // Reset name error state
+    const nameInput = document.getElementById('pkgCustomerName');
+    const nameError = document.getElementById('pkgNameError');
+    if (nameInput) nameInput.classList.remove('input-error');
+    if (nameError) nameError.style.display = 'none';
+
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closePackageReservationModal() {
+    const modal = document.getElementById('packageReservationModal');
+    if (modal) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function onPickupSelectChange() {
+    const pickupSelect = document.getElementById('pkgPickupSelect');
+    const customGroup = document.getElementById('pkgCustomPickupGroup');
+    const customInput = document.getElementById('pkgCustomPickupInput');
+    if (!pickupSelect || !customGroup) return;
+
+    if (pickupSelect.value === 'Autre') {
+      customGroup.style.display = 'block';
+      if (customInput) customInput.focus();
+    } else {
+      customGroup.style.display = 'none';
+      if (customInput) customInput.value = '';
+    }
+  }
+
+  function onPackageSelectChange() {
+    const select = document.getElementById('pkgSelect');
+    if (!select) return;
+    const opt = select.options[select.selectedIndex];
+    if (!opt) return;
+
+    currentPkgPrice = parseInt(opt.getAttribute('data-price')) || 5000;
+    currentPkgName = opt.getAttribute('data-name') || opt.text.split('—')[0].trim();
+    const hasTransport = opt.getAttribute('data-transport') === '1';
+    isWeekendPackage = opt.getAttribute('data-weekend') === '1';
+    const fixedCount = parseInt(opt.getAttribute('data-fixed'));
+
+    const nameDisplay = document.getElementById('pkgSelectedNameDisplay');
+    const rateDisplay = document.getElementById('pkgUnitRateDisplay');
+    const minusBtn = document.getElementById('btnPkgMinus');
+    const plusBtn = document.getElementById('btnPkgPlus');
+    const quickChips = document.getElementById('pkgQuickChips');
+    const peopleHint = document.getElementById('pkgPeopleHint');
+
+    if (nameDisplay) nameDisplay.textContent = currentPkgName;
+
+    if (isWeekendPackage) {
+      if (rateDisplay) rateDisplay.textContent = `${currentPkgPrice.toLocaleString('fr-FR')} XFA (Forfait séjour)`;
+      if (fixedCount) {
+        pkgPeopleCount = fixedCount;
+      }
+      if (minusBtn) minusBtn.style.display = 'none';
+      if (plusBtn) plusBtn.style.display = 'none';
+      if (quickChips) quickChips.style.display = 'none';
+      if (peopleHint) peopleHint.textContent = 'Forfait selon la formule choisie';
+    } else {
+      if (rateDisplay) rateDisplay.textContent = `${currentPkgPrice.toLocaleString('fr-FR')} FCFA / pers.`;
+      if (minusBtn) minusBtn.style.display = '';
+      if (plusBtn) plusBtn.style.display = '';
+      if (quickChips) quickChips.style.display = '';
+      if (peopleHint) peopleHint.textContent = 'Personnes';
+    }
+
+    // Show/hide transport options: hidden for package loisir and weekend, visible for evasion and spa
+    const transportGroup = document.getElementById('pkgTransportGroup');
+    if (transportGroup) {
+      transportGroup.style.display = hasTransport ? 'block' : 'none';
+    }
+
+    // Reset custom pickup field if transport is hidden
+    if (!hasTransport) {
+      const customGroup = document.getElementById('pkgCustomPickupGroup');
+      if (customGroup) customGroup.style.display = 'none';
+    } else {
+      onPickupSelectChange();
+    }
+
+    updatePkgSeatDisplay();
+  }
+
+  function changePkgPeopleCount(delta) {
+    if (isWeekendPackage) return;
+    let count = pkgPeopleCount + delta;
+    if (count < 1) count = 1;
+    if (count > 50) count = 50;
+    pkgPeopleCount = count;
+    updatePkgSeatDisplay();
+  }
+
+  function setPkgPeopleCount(count) {
+    if (isWeekendPackage) return;
+    pkgPeopleCount = Math.max(1, parseInt(count) || 1);
+    updatePkgSeatDisplay();
+  }
+
+  function updatePkgSeatDisplay() {
+    const numDisplay = document.getElementById('pkgPeopleDisplay');
+    const labelDisplay = document.getElementById('pkgPeopleLabel');
+    const minusBtn = document.getElementById('btnPkgMinus');
+
+    if (numDisplay) numDisplay.textContent = pkgPeopleCount;
+    if (labelDisplay) labelDisplay.textContent = pkgPeopleCount > 1 ? 'personnes' : 'personne';
+    if (minusBtn) minusBtn.disabled = (pkgPeopleCount <= 1);
+
+    updatePkgPriceCalculation();
+  }
+
+  function updatePkgPriceCalculation() {
+    const calcLabel = document.getElementById('pkgPriceCalculation');
+    const totalLabel = document.getElementById('pkgTotalPeopleLabel');
+    const totalDisplay = document.getElementById('pkgPriceTotal');
+
+    if (isWeekendPackage) {
+      const totalCost = currentPkgPrice;
+      if (calcLabel) {
+        calcLabel.textContent = `Séjour 02 nuitées (${pkgPeopleCount} pers.) : ${currentPkgPrice.toLocaleString('fr-FR')} XFA`;
+      }
+      if (totalLabel) {
+        totalLabel.textContent = `Forfait groupe : ${pkgPeopleCount} personne${pkgPeopleCount > 1 ? 's' : ''}`;
+      }
+      if (totalDisplay) {
+        totalDisplay.textContent = `${totalCost.toLocaleString('fr-FR')} XFA`;
+      }
+    } else {
+      const totalCost = pkgPeopleCount * currentPkgPrice;
+      if (calcLabel) {
+        calcLabel.textContent = `${pkgPeopleCount} personne${pkgPeopleCount > 1 ? 's' : ''} × ${currentPkgPrice.toLocaleString('fr-FR')} FCFA`;
+      }
+      if (totalLabel) {
+        totalLabel.textContent = `Total : ${pkgPeopleCount} personne${pkgPeopleCount > 1 ? 's' : ''}`;
+      }
+      if (totalDisplay) {
+        totalDisplay.textContent = `${totalCost.toLocaleString('fr-FR')} FCFA`;
+      }
+    }
+  }
+
+  function submitPackageReservationToWhatsApp() {
+    const nameInput = document.getElementById('pkgCustomerName');
+    const nameError = document.getElementById('pkgNameError');
+    const phoneInput = document.getElementById('pkgCustomerPhone');
+    const dateInput = document.getElementById('pkgDateInput');
+    const timeSlot = document.getElementById('pkgTimeSlot');
+    const pickupSelect = document.getElementById('pkgPickupSelect');
+
+    const customerName = (nameInput?.value || '').trim();
+    if (!customerName) {
+      if (nameError) nameError.style.display = 'block';
+      if (nameInput) {
+        nameInput.classList.add('input-error');
+        nameInput.focus();
+      }
+      return;
+    } else {
+      if (nameError) nameError.style.display = 'none';
+      if (nameInput) nameInput.classList.remove('input-error');
+    }
+
+    const customerPhone = (phoneInput?.value || '').trim();
+    let formattedDate = dateInput?.value || 'À convenir';
+    if (dateInput?.value) {
+      const parts = dateInput.value.split('-');
+      if (parts.length === 3) {
+        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        formattedDate = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    }
+
+    const select = document.getElementById('pkgSelect');
+    const opt = select ? select.options[select.selectedIndex] : null;
+    const hasTransport = opt ? opt.getAttribute('data-transport') === '1' : false;
+    const isWeekend = opt ? opt.getAttribute('data-weekend') === '1' : false;
+    const slot = timeSlot?.value || (isWeekend ? 'Séjour Week-end (02 Nuitées)' : 'Après-midi');
+
+    const totalCost = isWeekend ? currentPkgPrice : (pkgPeopleCount * currentPkgPrice);
+    const currencyStr = isWeekend ? 'XFA' : 'FCFA';
+
+    let messageLines = [
+      '🎁 *RÉSERVATION DE PACKAGE — UNITED HOTEL & CINÉMA MBANKOMO*',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `👤 *Nom du client :* ${customerName}`,
+    ];
+
+    if (customerPhone) {
+      messageLines.push(`📞 *Téléphone :* ${customerPhone}`);
+    }
+
+    messageLines.push(
+      `🌟 *Formule choisie :* ${currentPkgName}`,
+      `👥 *Nombre de personnes :* ${pkgPeopleCount} personne${pkgPeopleCount > 1 ? 's' : ''}`,
+      `📅 *Date souhaitée :* ${formattedDate}`,
+      `⏰ *Créneau / Séjour :* ${slot}`
+    );
+
+    if (isWeekend) {
+      messageLines.push(
+        `🏨 *Détails du séjour :* 02 Nuitées (Vendredi - Samedi - Dimanche)`,
+        `✨ *Prestations :* Chambre standard + Repas + Piscine + Cinéma Dolby + Fitness + Coup d'éclat`,
+        `📍 *Accès :* Directement au Complexe United Hôtel ★★★★ à Mbankomo (Formule sans transport)`
+      );
+    } else if (hasTransport) {
+      let pickupPlace = pickupSelect?.value || 'Non précisé';
+      if (pickupPlace === 'Autre') {
+        const customInput = document.getElementById('pkgCustomPickupInput');
+        const customVal = (customInput?.value || '').trim();
+        pickupPlace = customVal ? `Autre (Lieu souhaité : ${customVal})` : 'Autre (Lieu précis à convenir)';
+      }
+      messageLines.push(
+        `🚌 *Point de ramassage :* ${pickupPlace}`,
+        `⚠️ *Condition transport :* Assuré à partir de 8 personnes`
+      );
+    } else {
+      messageLines.push(`📍 *Accès :* Directement au Complexe à Mbankomo (Formule sans transport)`);
+    }
+
+    messageLines.push(
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      isWeekend
+        ? `💰 *Tarif forfaitaire :* ${currentPkgPrice.toLocaleString('fr-FR')} ${currencyStr}`
+        : `💰 *Tarif unitaire :* ${currentPkgPrice.toLocaleString('fr-FR')} FCFA / pers.`,
+      `💵 *MONTANT TOTAL :* ${totalCost.toLocaleString('fr-FR')} ${currencyStr}`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      'Bonjour United Hotel & Cinéma ! Merci de bien vouloir me confirmer les disponibilités pour notre venue et valider notre réservation. ✨🏊‍♂️🎬'
+    );
+
+    const encodedText = encodeURIComponent(messageLines.join('\n'));
+    const waUrl = `https://wa.me/237680522222?text=${encodedText}`;
+    window.open(waUrl, '_blank');
+    closePackageReservationModal();
+  }
+
+  /* Lightbox Logic */
+  function openFlyerLightbox(imgSrc, title) {
+    const lightbox = document.getElementById('flyerLightbox');
+    const img = document.getElementById('lightboxImage');
+    const titleEl = document.getElementById('lightboxTitle');
+    const dlBtn = document.getElementById('lightboxDownloadBtn');
+
+    if (img) img.src = imgSrc;
+    if (titleEl) titleEl.textContent = title || 'Affiche Officielle United Hotel & Cinéma';
+    if (dlBtn) dlBtn.href = imgSrc;
+
+    if (lightbox) {
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeFlyerLightbox(e) {
+    if (e && e.target && e.target.tagName === 'IMG') return; // don't close if clicking the image itself
+    const lightbox = document.getElementById('flyerLightbox');
+    if (lightbox) {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  // Keyboard escape handler for modals
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closePackageReservationModal();
+      closeFlyerLightbox();
+    }
+  });
+
+  // Background clicks to close modal
+  document.addEventListener('click', (e) => {
+    const pkgModal = document.getElementById('packageReservationModal');
+    if (pkgModal && e.target === pkgModal) {
+      closePackageReservationModal();
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initPackageModalDates();
+    const nameInput = document.getElementById('pkgCustomerName');
+    if (nameInput) {
+      nameInput.addEventListener('input', () => {
+        if (nameInput.value.trim() !== '') {
+          nameInput.classList.remove('input-error');
+          const err = document.getElementById('pkgNameError');
+          if (err) err.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

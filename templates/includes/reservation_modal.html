@@ -1,0 +1,466 @@
+<!-- =========================================================================
+     FLOATING WHATSAPP QUICK RESERVATION PILL
+     ========================================================================= -->
+<button type="button" class="floating-whatsapp-widget" onclick="openReservationModal()" title="Réserver vos places sur WhatsApp">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.27-2.42 5.82a8.188 8.188 0 0 1-5.82 2.42c-1.44 0-2.85-.38-4.08-1.11l-.29-.17-3.12.82.83-3.04-.19-.3a8.182 8.182 0 0 1-1.25-4.44c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+  </svg>
+  <span>Réserver vos places</span>
+</button>
+
+<!-- =========================================================================
+     CUSTOMER RESERVATION MODAL (WHATSAPP 680 52 22 22)
+     ========================================================================= -->
+<div class="reservation-modal-backdrop" id="reservationModal" role="dialog" aria-modal="true" aria-labelledby="resModalTitle">
+  <div class="reservation-modal-dialog">
+    <div class="reservation-modal-header">
+      <span class="reservation-badge-tag">⚡ Réservation Directe</span>
+      <h3 class="reservation-modal-title" id="resModalTitle">
+        <span>🎟️ Réserver vos Places</span>
+      </h3>
+      <p class="reservation-modal-subtitle">
+        Sélectionnez votre film, vos places (adultes & enfants), date et heure. Redirection instantanée sur WhatsApp (<strong>680 52 22 22</strong>).
+      </p>
+      <button type="button" class="reservation-modal-close" onclick="closeReservationModal()" aria-label="Fermer la fenêtre">✕</button>
+    </div>
+
+    <div class="reservation-modal-body">
+      <!-- 1. Movie Selection (Toggle menu / Select dropdown with database movies) -->
+      <div class="res-group">
+        <label class="res-label" for="resFilmSelect">
+          <span>🎬 Sélection du Film</span>
+          <span class="res-label-hint">Menu déroulant</span>
+        </label>
+        <select id="resFilmSelect" class="res-select" onchange="onMovieSelectChange()">
+          <option value="" disabled>-- Choisissez un film au catalogue --</option>
+          {% if res_now_showing %}
+          <optgroup label="🍿 Actuellement en salle">
+            {% for film in res_now_showing %}
+            <option value="{{ film.title }}" data-format="{{ film.format_type|default:'2D' }}">{{ film.title }} (En salle)</option>
+            {% endfor %}
+          </optgroup>
+          {% endif %}
+
+          {% if res_upcoming %}
+          <optgroup label="⏳ Prochainement à l'affiche">
+            {% for film in res_upcoming %}
+            <option value="{{ film.title }}" data-format="{{ film.format_type|default:'2D' }}">{{ film.title }} (Sortie : {{ film.date_out|default:'Bientôt' }})</option>
+            {% endfor %}
+          </optgroup>
+          {% endif %}
+
+          <optgroup label="📅 Programmation Hebdomadaire">
+            <option value="Programme de la Semaine">Programme officiel de la Semaine (Séance au choix)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- 2. Dual Seats Counters (Adults + Kids < 12 years) -->
+      <div class="res-group">
+        <label class="res-label">
+          <span>🎟️ Nombre de Places (Sièges)</span>
+          <span class="res-label-hint">Adultes & Enfants (-12 ans)</span>
+        </label>
+        
+        <div class="res-dual-counter-grid">
+          <!-- Adults Counter -->
+          <div class="res-counter-card">
+            <div class="res-counter-header">
+              <span class="res-counter-title">👤 Adultes</span>
+              <span class="res-counter-rate">3 000 XAF</span>
+            </div>
+            <div class="res-seat-counter-wrap">
+              <button type="button" class="res-seat-btn" onclick="changeAdultsCount(-1)" id="btnAdultMinus" aria-label="Moins d'adultes">−</button>
+              <div class="res-seat-display-box">
+                <span class="res-seat-count-num" id="resAdultDisplay">1</span>
+                <span class="res-seat-count-label" id="resAdultLabel">adulte</span>
+              </div>
+              <button type="button" class="res-seat-btn" onclick="changeAdultsCount(1)" aria-label="Plus d'adultes">+</button>
+            </div>
+          </div>
+
+          <!-- Kids < 12 Counter -->
+          <div class="res-counter-card">
+            <div class="res-counter-header">
+              <span class="res-counter-title">🧒 Enfants (-12 ans)</span>
+              <span class="res-counter-rate gold">1 500 XAF</span>
+            </div>
+            <div class="res-seat-counter-wrap">
+              <button type="button" class="res-seat-btn" onclick="changeKidsCount(-1)" id="btnKidsMinus" disabled aria-label="Moins d'enfants">−</button>
+              <div class="res-seat-display-box">
+                <span class="res-seat-count-num" id="resKidsDisplay">0</span>
+                <span class="res-seat-count-label" id="resKidsLabel">enfant</span>
+              </div>
+              <button type="button" class="res-seat-btn" onclick="changeKidsCount(1)" aria-label="Plus d'enfants">+</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick seat combination pills -->
+        <div class="res-quick-chips">
+          <button type="button" class="res-chip-btn active" onclick="setSeatsCombination(1, 0)">1 Adulte</button>
+          <button type="button" class="res-chip-btn" onclick="setSeatsCombination(2, 0)">2 Adultes</button>
+          <button type="button" class="res-chip-btn" onclick="setSeatsCombination(1, 1)">1 Adulte + 1 Enfant</button>
+          <button type="button" class="res-chip-btn" onclick="setSeatsCombination(2, 1)">2 Adultes + 1 Enfant</button>
+          <button type="button" class="res-chip-btn" onclick="setSeatsCombination(2, 2)">2 Adultes + 2 Enfants</button>
+          <button type="button" class="res-chip-btn" onclick="setSeatsCombination(1, 2)">1 Adulte + 2 Enfants</button>
+        </div>
+      </div>
+
+      <!-- 3. Date & Time with Calendar & Clock -->
+      <div class="res-group">
+        <div class="res-datetime-grid">
+          <!-- Calendar Date Picker -->
+          <div>
+            <label class="res-label" for="resDateInput">
+              <span>📅 Date de la séance *</span>
+              <span class="res-label-hint">Calendrier</span>
+            </label>
+            <input type="date" id="resDateInput" class="res-input" required>
+            <div class="res-quick-chips" style="margin-top: 0.35rem;">
+              <button type="button" class="res-chip-btn" onclick="setDatePreset(0)">Aujourd'hui</button>
+              <button type="button" class="res-chip-btn" onclick="setDatePreset(1)">Demain</button>
+              <button type="button" class="res-chip-btn" onclick="setDatePresetToWeekend()">Ce week-end</button>
+            </div>
+          </div>
+
+          <!-- Clock Time Picker -->
+          <div>
+            <label class="res-label" for="resTimeInput">
+              <span>⏰ Heure de la séance *</span>
+              <span class="res-label-hint">Horloge</span>
+            </label>
+            <input type="time" id="resTimeInput" class="res-input" value="18:00" required>
+            <div class="res-quick-chips" style="margin-top: 0.35rem;">
+              <button type="button" class="res-chip-btn" onclick="setTimePreset('14:30')">14h30</button>
+              <button type="button" class="res-chip-btn" onclick="setTimePreset('18:00')">18h00</button>
+              <button type="button" class="res-chip-btn" onclick="setTimePreset('20:30')">20h30</button>
+              <button type="button" class="res-chip-btn" onclick="setTimePreset('22:00')">22h00</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Customer Name (REQUIRED, not optional) -->
+      <div class="res-group">
+        <label class="res-label" for="resCustomerName">
+          <span>👤 Nom complet du client *</span>
+          <span class="res-label-hint" style="color: #dc2626; font-weight: 700;">Requis</span>
+        </label>
+        <input type="text" id="resCustomerName" class="res-input" placeholder="ex: Jordan, Alain Mbappe, Marie Ondoa..." required>
+        <div id="resNameError" class="res-field-error" style="display: none;">
+          ⚠️ Veuillez renseigner votre nom complet pour confirmer la réservation.
+        </div>
+      </div>
+
+      <!-- 5. Price breakdown summary -->
+      <div class="res-price-summary-card">
+        <div class="res-price-breakdown">
+          <div>Détail de votre réservation :</div>
+          <div class="res-price-breakdown-math" id="resPriceCalculation">1 Adulte × 3 000 XAF</div>
+          <div style="font-size: 0.76rem; color: #527957; margin-top: 2px;" id="resTotalSeatsLabel">Total : 1 place</div>
+        </div>
+        <div class="res-price-total-badge">
+          <div class="res-price-total-label">Total à régler</div>
+          <div class="res-price-total-num" id="resPriceTotal">3 000 XAF</div>
+        </div>
+      </div>
+
+      <!-- Confirm and send on WhatsApp -->
+      <button type="button" class="btn-whatsapp-redirect" id="btnConfirmWhatsApp" onclick="submitReservationToWhatsApp()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.27-2.42 5.82a8.188 8.188 0 0 1-5.82 2.42c-1.44 0-2.85-.38-4.08-1.11l-.29-.17-3.12.82.83-3.04-.19-.3a8.182 8.182 0 0 1-1.25-4.44c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+        </svg>
+        <span>Envoyer la Réservation sur WhatsApp</span>
+      </button>
+
+      <div class="res-modal-footer-note">
+        🔒 Redirection sécurisée vers le WhatsApp officiel United Cinema <strong>(+237) 680 52 22 22</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State: Adults and Kids count
+  let adultSeats = 1;
+  let kidSeats = 0;
+  const adultPrice = 3000;
+  const kidPrice = 1500;
+
+  // Initialize date picker with today's date if empty
+  function initReservationDates() {
+    const dateInput = document.getElementById('resDateInput');
+    if (dateInput && !dateInput.value) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      dateInput.value = `${yyyy}-${mm}-${dd}`;
+      dateInput.min = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function setDatePreset(daysFromNow) {
+    const target = new Date();
+    target.setDate(target.getDate() + daysFromNow);
+    const yyyy = target.getFullYear();
+    const mm = String(target.getMonth() + 1).padStart(2, '0');
+    const dd = String(target.getDate()).padStart(2, '0');
+    const dateInput = document.getElementById('resDateInput');
+    if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  function setDatePresetToWeekend() {
+    const target = new Date();
+    const day = target.getDay(); // 0 is Sunday, 6 is Saturday
+    let diff = 6 - day; // days until Saturday
+    if (diff <= 0) diff = (day === 6 ? 0 : 6);
+    target.setDate(target.getDate() + diff);
+    const yyyy = target.getFullYear();
+    const mm = String(target.getMonth() + 1).padStart(2, '0');
+    const dd = String(target.getDate()).padStart(2, '0');
+    const dateInput = document.getElementById('resDateInput');
+    if (dateInput) dateInput.value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  function setTimePreset(timeStr) {
+    const timeInput = document.getElementById('resTimeInput');
+    if (timeInput) timeInput.value = timeStr;
+  }
+
+  function openReservationModal(filmTitle, filmTime) {
+    const modal = document.getElementById('reservationModal');
+    const filmSelect = document.getElementById('resFilmSelect');
+    
+    initReservationDates();
+
+    // Pre-select film in dropdown
+    if (filmTitle && filmSelect) {
+      let found = false;
+      const cleanTitle = filmTitle.trim().toLowerCase();
+      for (let i = 0; i < filmSelect.options.length; i++) {
+        const opt = filmSelect.options[i];
+        if (opt.value.trim().toLowerCase() === cleanTitle || opt.text.trim().toLowerCase().includes(cleanTitle)) {
+          filmSelect.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+      if (!found && filmTitle.trim() !== '') {
+        // Create temporary option if not present
+        const opt = new Option(filmTitle, filmTitle, true, true);
+        filmSelect.add(opt);
+      }
+    } else if (filmSelect && filmSelect.selectedIndex <= 0 && filmSelect.options.length > 1) {
+      filmSelect.selectedIndex = 1;
+    }
+
+    // If time was passed, check if it has a time format like 18:00 or 18h
+    if (filmTime && filmTime.includes(':')) {
+      const match = filmTime.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
+      if (match) setTimePreset(match[0]);
+    }
+
+    updatePriceCalculation();
+
+    // Reset errors
+    const nameInput = document.getElementById('resCustomerName');
+    const nameError = document.getElementById('resNameError');
+    if (nameInput) nameInput.classList.remove('input-error');
+    if (nameError) nameError.style.display = 'none';
+
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeReservationModal() {
+    const modal = document.getElementById('reservationModal');
+    if (modal) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+
+  function changeAdultsCount(delta) {
+    let newCount = adultSeats + delta;
+    if (newCount < 0) newCount = 0;
+    if (newCount === 0 && kidSeats === 0) newCount = 1; // at least 1 person
+    if (newCount > 30) newCount = 30;
+    adultSeats = newCount;
+    updateSeatDisplays();
+  }
+
+  function changeKidsCount(delta) {
+    let newCount = kidSeats + delta;
+    if (newCount < 0) newCount = 0;
+    if (adultSeats === 0 && newCount === 0) newCount = 1;
+    if (newCount > 30) newCount = 30;
+    kidSeats = newCount;
+    updateSeatDisplays();
+  }
+
+  function setSeatsCombination(adults, kids) {
+    adultSeats = Math.max(0, parseInt(adults) || 0);
+    kidSeats = Math.max(0, parseInt(kids) || 0);
+    if (adultSeats === 0 && kidSeats === 0) adultSeats = 1;
+    updateSeatDisplays();
+  }
+
+  function updateSeatDisplays() {
+    const adultNum = document.getElementById('resAdultDisplay');
+    const adultLabel = document.getElementById('resAdultLabel');
+    const adultMinus = document.getElementById('btnAdultMinus');
+
+    const kidsNum = document.getElementById('resKidsDisplay');
+    const kidsLabel = document.getElementById('resKidsLabel');
+    const kidsMinus = document.getElementById('btnKidsMinus');
+
+    if (adultNum) adultNum.textContent = adultSeats;
+    if (adultLabel) adultLabel.textContent = adultSeats > 1 ? 'adultes' : 'adulte';
+    if (adultMinus) adultMinus.disabled = (adultSeats === 0 || (adultSeats === 1 && kidSeats === 0));
+
+    if (kidsNum) kidsNum.textContent = kidSeats;
+    if (kidsLabel) kidsLabel.textContent = kidSeats > 1 ? 'enfants' : 'enfant';
+    if (kidsMinus) kidsMinus.disabled = (kidSeats === 0 || (kidSeats === 1 && adultSeats === 0));
+
+    updatePriceCalculation();
+  }
+
+  function updatePriceCalculation() {
+    const mathDisplay = document.getElementById('resPriceCalculation');
+    const totalDisplay = document.getElementById('resPriceTotal');
+    const totalSeatsLabel = document.getElementById('resTotalSeatsLabel');
+
+    const totalPlaces = adultSeats + kidSeats;
+    const totalAdultCost = adultSeats * adultPrice;
+    const totalKidCost = kidSeats * kidPrice;
+    const totalCost = totalAdultCost + totalKidCost;
+
+    let mathText = [];
+    if (adultSeats > 0) {
+      mathText.push(`${adultSeats} Adulte${adultSeats > 1 ? 's' : ''} (${totalAdultCost.toLocaleString('fr-FR')} XAF)`);
+    }
+    if (kidSeats > 0) {
+      mathText.push(`${kidSeats} Enfant${kidSeats > 1 ? 's' : ''} (${totalKidCost.toLocaleString('fr-FR')} XAF)`);
+    }
+    if (mathDisplay) mathDisplay.textContent = mathText.join(' + ') || '0 place';
+
+    if (totalDisplay) totalDisplay.textContent = `${totalCost.toLocaleString('fr-FR')} XAF`;
+    if (totalSeatsLabel) totalSeatsLabel.textContent = `Total : ${totalPlaces} place${totalPlaces > 1 ? 's' : ''} au cinéma`;
+  }
+
+  function onMovieSelectChange() {
+    // Clear any previous error styling
+    const select = document.getElementById('resFilmSelect');
+    if (select) select.classList.remove('input-error');
+  }
+
+  function submitReservationToWhatsApp() {
+    const filmSelect = document.getElementById('resFilmSelect');
+    const dateInput = document.getElementById('resDateInput');
+    const timeInput = document.getElementById('resTimeInput');
+    const nameInput = document.getElementById('resCustomerName');
+    const nameError = document.getElementById('resNameError');
+
+    // 1. Validation: Name is REQUIRED
+    const customerName = (nameInput?.value || '').trim();
+    if (!customerName) {
+      if (nameError) nameError.style.display = 'block';
+      if (nameInput) {
+        nameInput.classList.add('input-error');
+        nameInput.focus();
+      }
+      return;
+    } else {
+      if (nameError) nameError.style.display = 'none';
+      if (nameInput) nameInput.classList.remove('input-error');
+    }
+
+    // 2. Validation: Movie must be selected
+    const selectedFilm = (filmSelect?.value || '').trim();
+    if (!selectedFilm) {
+      if (filmSelect) {
+        filmSelect.classList.add('input-error');
+        filmSelect.focus();
+      }
+      alert('Veuillez sélectionner un film dans le menu déroulant.');
+      return;
+    }
+
+    // 3. Validation: At least one seat
+    const totalPlaces = adultSeats + kidSeats;
+    if (totalPlaces < 1) {
+      alert('Veuillez sélectionner au moins 1 place pour votre réservation.');
+      return;
+    }
+
+    // Format date nicely
+    let formattedDate = dateInput?.value || 'Aujourd’hui';
+    if (dateInput?.value) {
+      const parts = dateInput.value.split('-');
+      if (parts.length === 3) {
+        const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        formattedDate = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    }
+    const formattedTime = timeInput?.value ? `${timeInput.value.replace(':', 'h')}` : '18h00';
+
+    const totalCost = (adultSeats * adultPrice) + (kidSeats * kidPrice);
+
+    // Build structured WhatsApp message
+    let messageLines = [
+      '🎬 *RÉSERVATION DE PLACES — UNITED CINEMA MBANKOMO*',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `👤 *Nom du client :* ${customerName}`,
+      `🍿 *Film sélectionné :* ${selectedFilm}`,
+      `📅 *Date de la séance :* ${formattedDate}`,
+      `⏰ *Heure de la séance :* ${formattedTime}`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '🎟️ *Détail des places réservées :*',
+    ];
+
+    if (adultSeats > 0) {
+      messageLines.push(`• *Adultes :* ${adultSeats} place${adultSeats > 1 ? 's' : ''} × 3 000 XAF = ${(adultSeats * adultPrice).toLocaleString('fr-FR')} XAF`);
+    }
+    if (kidSeats > 0) {
+      messageLines.push(`• *Enfants (-12 ans) :* ${kidSeats} place${kidSeats > 1 ? 's' : ''} × 1 500 XAF = ${(kidSeats * kidPrice).toLocaleString('fr-FR')} XAF`);
+    }
+
+    messageLines.push(`• *Total des places :* ${totalPlaces} place${totalPlaces > 1 ? 's' : ''}`);
+    messageLines.push(`💰 *Montant total estimé :* ${totalCost.toLocaleString('fr-FR')} XAF`);
+    messageLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    messageLines.push('Bonjour United Cinema ! Merci de bien vouloir me confirmer la disponibilité et valider ma réservation. 🍿✨');
+
+    const encodedText = encodeURIComponent(messageLines.join('\n'));
+    const waUrl = `https://wa.me/237680522222?text=${encodedText}`;
+    window.open(waUrl, '_blank');
+    closeReservationModal();
+  }
+
+  // Event listeners
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeReservationModal();
+  });
+  document.addEventListener('click', (e) => {
+    const modal = document.getElementById('reservationModal');
+    if (modal && e.target === modal) closeReservationModal();
+  });
+
+  // Remove error state on typing name
+  document.addEventListener('DOMContentLoaded', () => {
+    initReservationDates();
+    const nameInput = document.getElementById('resCustomerName');
+    if (nameInput) {
+      nameInput.addEventListener('input', () => {
+        if (nameInput.value.trim() !== '') {
+          nameInput.classList.remove('input-error');
+          const nameError = document.getElementById('resNameError');
+          if (nameError) nameError.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>

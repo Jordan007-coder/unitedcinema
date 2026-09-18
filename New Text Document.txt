@@ -1,0 +1,12 @@
+user name: Jordan
+pwd : test1234
+
+******************************
+how to migrates when a new field is add to the model file
+
+python manage.py makemigrations
+python manage.py migrate
+
+******************************
+To upload an image you have to use the package pillow
+so we need to do "pip install pillow"

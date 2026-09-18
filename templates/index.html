@@ -1,0 +1,636 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>United Cinema | Mbankomo - Yaoundé - Cameroun</title>
+  <meta name="description" content="Bienvenue à United Cinema, le complexe cinématographique moderne au Centre administratif de Mbankomo, Yaoundé. Salles climatisées, son DOLBY, sièges en cuir et projection 3D.">
+  <link rel="icon" type="image/jpeg" href="{% static 'logo.jpg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+  <!-- Top Info Notice -->
+  <div class="top-notice-bar">
+    <span>{% if active_schedule and active_schedule.notice %}{{ active_schedule.notice }}{% else %}🎬 Navette gratuite Ahala ↔ Mbankomo pour toutes les séances à partir de 18h00 !{% endif %}</span>
+    <a href="#schedule-row">Voir les horaires de la semaine</a>
+  </div>
+
+  <!-- =========================================================================
+       ROW 1 : HEADER
+       Elements: Logo (from logo), Name in two main code colors (#1b8100, #e2a500),
+       Links to now showing and upcoming movies.
+       ========================================================================= -->
+  <header class="main-header" id="header-row">
+    <div class="header-container">
+      <a href="#header-row" class="brand-link" title="United Cinema - Accueil">
+        <img src="{% static 'logo.jpg' %}" alt="Logo United Cinema" class="brand-logo-img">
+        <div class="brand-title-wrap">
+          <span class="brand-name">
+            <span class="brand-green">UNITED</span> <span class="brand-gold">CINEMA</span>
+          </span>
+          <span class="brand-location">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Centre Administratif de Mbankomo - Yaoundé
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <nav class="main-nav" aria-label="Navigation principale">
+        <ul>
+          <li><a href="#now-showing" class="nav-link">🎬 À l'affiche</a></li>
+          <li><a href="#upcoming-movies" class="nav-link">⏳ Prochainement</a></li>
+          <li><a href="#schedule-row" class="nav-link">📅 Programme</a></li>
+          <li><a href="{% url 'films:list' %}" class="nav-link">🎞️ Catalogue</a></li>
+          <li><a href="{% url 'packages' %}" class="nav-link nav-link-packages">🎁 Packages</a></li>
+          <li><a href="#characteristics-row" class="nav-link">✨ Le Cinéma</a></li>
+          <li><a href="#location-map-row" class="nav-link">📍 Plan d'accès</a></li>
+          <li>
+            <button type="button" class="btn-nav-reserve" onclick="openReservationModal()" title="Réserver vos places sur WhatsApp">
+              <span>🎟️ Réserver</span>
+            </button>
+          </li>
+          {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+          <li><a href="{% url 'dashboard:home' %}" class="btn-nav-create">📊 Dashboard Admin</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" aria-label="Ouvrir le menu">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- =========================================================================
+         ROW 2 : CHARACTERISTICS OF THE CINEMA
+         Brief text giving characteristics: air-conditioned hall & room,
+         leather double-comfort seats, 3D DOLBY sound, VIP hostess, free shuttle, etc.
+         ========================================================================= -->
+    <section class="section-row" id="characteristics-row">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Une Expérience Unique à Mbankomo</span>
+          <h1 class="section-title">Bienvenue à <strong class="brand-green">UNITED</strong> <strong class="brand-gold">CINEMA</strong></h1>
+          <p class="section-subtitle">Découvrez le summum du 7ème art dans un cadre d'exception aux portes de Yaoundé.</p>
+        </div>
+
+        <div class="characteristics-hero-text">
+          <p class="characteristics-lead">
+            Situé au <strong>Centre Administratif de Mbankomo</strong>, <strong>United Cinema</strong> vous accueille dans un <strong>hall et une salle de cinéma entièrement climatisés</strong>, dotés de <strong>doubles dossiers grand confort</strong> avec des <strong>sièges luxueux en cuir</strong>. Profitez d'une projection numérique ultra-haute définition, de <strong>films au format 3D</strong> pour un relief spectaculaire, et d'une acoustique spatiale <strong>DOLBY haute résolution</strong> pour une immersion sensorielle totale.
+          </p>
+          <div class="characteristics-slogan">
+            « {{ cinema.slogan }} »
+          </div>
+        </div>
+
+        <!-- Characteristics Feature Cards Grid -->
+        <div class="characteristics-grid">
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">❄️</div>
+            <h2 class="feature-title">Hall & Salle Climatisés</h2>
+            <p class="feature-desc">Un espace moderne, tempéré et agréable en toute saison pour vous détendre avant et pendant votre séance.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">🛋️</div>
+            <h2 class="feature-title">Sièges en Cuir VIP</h2>
+            <p class="feature-desc">Fauteuils ergonomiques avec doubles dossiers de confort en cuir véritable, pour un bien-être incomparable.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">👓</div>
+            <h2 class="feature-title">Projection 3D & DOLBY</h2>
+            <p class="feature-desc">Des images cristallines et un son spatialisé DOLBY haute fidélité pour vous plonger au cœur de l'action.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">👩‍💼</div>
+            <h2 class="feature-title">Service Hôtesses Haut de Gamme</h2>
+            <p class="feature-desc">Un accueil chaleureux, professionnel et attentionné dès votre arrivée pour un service personnalisé.</p>
+          </div>
+
+          <div class="feature-card shuttle-badge-card">
+            <div class="feature-icon-wrapper">🚌</div>
+            <h2 class="feature-title">Navette Gratuite</h2>
+            <p class="feature-desc">Transport gratuit aller-retour entre Ahala-Barrière et le cinéma pour toutes les séances à partir de 18h00.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon-wrapper">🍿</div>
+            <h2 class="feature-title">Confiserie & Wifi Gratuit</h2>
+            <p class="feature-desc">Popcorn frais, boissons fraîches, encas gourmands et connexion Wi-Fi offerte à tous nos spectateurs.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         ROW 3 : MOUNTED IMAGE OF THE WEEK'S SCHEDULE
+         The schedule poster (prog.png) with showtimes, ticket rates, and click-to-zoom.
+         ========================================================================= -->
+    <section class="section-row row-bg-mint" id="schedule-row">
+      <div class="container">
+        <div class="section-header" style="position: relative;">
+          <span class="section-tag gold">Programmation Officielle</span>
+          <h2 class="section-title">
+            {% if active_schedule %}{{ active_schedule.title }}{% else %}Programme de la <strong class="brand-green">Semaine</strong>{% endif %}
+          </h2>
+          <p class="section-subtitle">
+            {% if active_schedule %}{{ active_schedule.subtitle }}{% else %}Consultez l'affiche officielle des séances, horaires et tarifs de la semaine en cours.{% endif %}
+          </p>
+
+          {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+          <div style="margin-top: 1rem;">
+            <a href="{% url 'films:schedule_update' %}" class="btn-hero-ghost" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; color: var(--color-green-primary); border: 1.5px solid var(--color-green-primary); padding: 0.45rem 1.25rem; border-radius: 9999px; font-weight: 700; font-size: 0.88rem; text-decoration: none; box-shadow: var(--shadow-sm);">
+              <span>📅 Modifier le Programme de la Semaine</span>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="schedule-wrapper">
+          <div class="schedule-mounted-frame" title="Cliquez pour agrandir le programme">
+            {% if active_schedule and active_schedule.poster %}
+              <img src="{{ active_schedule.poster.url }}" alt="{{ active_schedule.title }}" class="schedule-img">
+            {% else %}
+              <img src="{% static 'schedule_week.png' %}" alt="Programme hebdomadaire officiel de United Cinema" class="schedule-img">
+            {% endif %}
+            <div class="schedule-overlay-hint">
+              <span class="schedule-overlay-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/><path d="M12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/></svg>
+                Cliquez pour agrandir le programme en plein écran
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Pricing Badges -->
+          <div class="schedule-quick-info">
+            <div class="info-pill">
+              <span>Séance Classique :</span>
+              <strong class="price-tag">{% if active_schedule %}{{ active_schedule.price_standard }}{% else %}3 000 XAF{% endif %}</strong>
+            </div>
+            <div class="info-pill">
+              <span>Moins de 12 ans :</span>
+              <strong class="price-tag">{% if active_schedule %}{{ active_schedule.price_under_12 }}{% else %}1 500 XAF{% endif %}</strong>
+            </div>
+            <div class="info-pill">
+              <span>Lunettes 3D :</span>
+              <strong class="price-tag">{% if active_schedule %}{{ active_schedule.price_glasses_3d }}{% else %}1 500 XAF{% endif %}</strong>
+            </div>
+            <div class="info-pill">
+              <span>Première :</span>
+              <strong class="price-tag">{% if active_schedule %}{{ active_schedule.price_premiere }}{% else %}5 000 XAF{% endif %}</strong>
+            </div>
+            <div class="info-pill">
+              <span>Avant-Première :</span>
+              <strong class="price-tag">{% if active_schedule %}{{ active_schedule.price_avant_premiere }}{% else %}5 000 XAF{% endif %}</strong>
+            </div>
+          </div>
+
+          <!-- WhatsApp Schedule Reservation CTA -->
+          <div style="text-align: center; margin-top: 1.75rem;">
+            <button type="button" class="btn-whatsapp-redirect" onclick="openReservationModal('Programme de la Semaine', 'Séance au choix')" style="max-width: 440px; margin: 0 auto; padding: 0.85rem 1.5rem; font-size: 0.95rem;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.27-2.42 5.82a8.188 8.188 0 0 1-5.82 2.42c-1.44 0-2.85-.38-4.08-1.11l-.29-.17-3.12.82.83-3.04-.19-.3a8.182 8.182 0 0 1-1.25-4.44c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/></svg>
+              <span>🎟️ Réserver des places via WhatsApp (680 52 22 22)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lightbox Modal for Schedule Image -->
+    <div class="lightbox-modal" id="scheduleLightbox" role="dialog" aria-modal="true" aria-label="Agrandissement du programme de la semaine">
+      <div class="lightbox-content">
+        <button class="lightbox-close-btn" aria-label="Fermer">✕</button>
+        {% if active_schedule and active_schedule.poster %}
+          <img src="{{ active_schedule.poster.url }}" alt="{{ active_schedule.title }}" class="lightbox-img">
+        {% else %}
+          <img src="{% static 'schedule_week.png' %}" alt="Programme United Cinema Agrandi" class="lightbox-img">
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         ROW 4 : SLIDING IMAGE ROW (5 SECONDS LAPSE)
+         Auto-slide with exactly 5-second intervals, timer bar, dots, prev/next.
+         ========================================================================= -->
+    <section class="section-row" id="slider-row">
+      <div class="carousel-container" aria-label="Galerie des temps forts du cinéma">
+        <div class="carousel-track">
+          {% for slide in carousel_slides %}
+          <div class="carousel-slide {% if forloop.first %}active{% endif %}">
+            <img src="{% static slide.image %}" alt="{{ slide.title }}" class="slide-bg-img">
+            <div class="carousel-gradient-overlay"></div>
+            <div class="slide-content">
+              <span class="slide-badge">{{ slide.badge }}</span>
+              <h2 class="slide-title">{{ slide.title }}</h2>
+              <p class="slide-subtitle">{{ slide.subtitle }}</p>
+              <a href="{{ slide.cta_link }}" class="slide-cta-btn">
+                <span>{{ slide.cta_text }}</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Carousel Navigation Controls -->
+        <button class="carousel-btn carousel-prev" aria-label="Diapositive précédente">‹</button>
+        <button class="carousel-btn carousel-next" aria-label="Diapositive suivante">›</button>
+
+        <!-- Dots & 5-Second Animated Progress Bar -->
+        <div class="carousel-bottom-bar">
+          <div class="carousel-dots">
+            {% for slide in carousel_slides %}
+            <button class="carousel-dot {% if forloop.first %}active{% endif %}" aria-label="Aller à la diapositive {{ forloop.counter }}"></button>
+            {% endfor %}
+          </div>
+          <div class="carousel-progress-track" title="Défilement automatique toutes les 5 secondes">
+            <div class="carousel-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         ROW 5 : MOVIES ACTUALLY RUNNING IN THE THEATER (A L'AFFICHE)
+         Details: Image, Name in bold, Duration, Age rating, Synopsis.
+         Films:
+         1. Spiderman : brand new day
+         2. insidious : l’invasion du lointain
+         3. TAD l’explorateur et la lampe magique
+         4. the dog stars
+         5. les ensorcelleuses 2
+         ========================================================================= -->
+    <section class="section-row row-bg-white" id="now-showing">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Séances du Moment</span>
+          <h2 class="section-title">Actuellement au <strong class="brand-green">Cinéma</strong></h2>
+          <p class="section-subtitle">Vivez les plus grands succès du box-office sur grand écran avec son spatial DOLBY.</p>
+        </div>
+
+        <div class="movies-grid">
+          {% for movie in now_showing_movies %}
+          <article class="movie-card" id="{{ movie.id }}">
+            <div class="movie-poster-wrap">
+              {% if movie.is_media %}
+                <img src="{{ movie.image }}" alt="Affiche du film {{ movie.title }}" class="movie-poster" loading="lazy">
+              {% elif movie.image %}
+                <img src="{% static movie.image %}" alt="Affiche du film {{ movie.title }}" class="movie-poster" loading="lazy">
+              {% else %}
+                <div style="width: 100%; height: 350px; background: #111e0c; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff;">🎬</div>
+              {% endif %}
+
+              <span class="poster-badge-top-left {% if movie.is_new %}rating-tp{% endif %}">
+                {% if movie.is_new %}Nouveau{% else %}À l'affiche{% endif %}
+              </span>
+              <span class="poster-badge-top-right {% if movie.age_badge == '-12' %}rating-12{% elif movie.age_badge == '-16' %}rating-16{% else %}rating-tp{% endif %}">
+                {{ movie.age_badge }}
+              </span>
+            </div>
+
+            <div class="movie-body">
+              <!-- Movie Title in Bold -->
+              <h3 class="movie-title-bold">
+                {% if movie.slug %}
+                  <a href="{% url 'films:details' slug=movie.slug %}" style="color: inherit; text-decoration: none;">{{ movie.title }}</a>
+                {% else %}
+                  {{ movie.title }}
+                {% endif %}
+              </h3>
+
+              <div class="movie-meta-row">
+                <span class="meta-chip duration">⏱ {{ movie.duration }}</span>
+                <span class="meta-chip format">{{ movie.format }}</span>
+                <span class="meta-chip">🏷️ {{ movie.age_rating }}</span>
+              </div>
+
+              <div class="movie-genre">{{ movie.genre }} • {{ movie.version }}</div>
+
+              <!-- Synopsis -->
+              <p class="movie-synopsis">{{ movie.synopsis }}</p>
+
+              <div class="movie-actions">
+                <button type="button" class="btn-card-reserve" onclick="openReservationModal('{{ movie.title|escapejs }}', '{{ movie.duration|escapejs }}')" title="Réserver vos places sur WhatsApp">
+                  <span>🎟️ Réserver</span>
+                </button>
+                {% if movie.slug %}
+                <a href="{% url 'films:details' slug=movie.slug %}" class="btn-book-ticket" style="background: #f0f7ec; color: var(--color-green-dark); border: 1px solid rgba(27,129,0,0.25); text-decoration: none;">
+                  <span>Fiche film</span>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         ROW 6 : UPCOMING MOVIES IN THE THEATER (PROCHAINEMENT)
+         Details: Image, Name in bold, Duration, Age rating, Releasing date, Synopsis.
+         September 2026:
+         - RESIDENT EVIL - 18 september 2026
+         - HEART OF THE BEAST - 25 september 2026
+         October 2026:
+         - DIGGER - 02 octobre 2026
+         - CARS (REP 2026) - 02 octobre 2026
+         - ENGLOUTI - 16 octobre 2026
+         - STREET FIGHTER - 16 octobre 2026
+         - MOCHY - 16 octobre 2026
+         (Strictly limited to the listed movies)
+         ========================================================================= -->
+    <section class="section-row row-bg-mint" id="upcoming-movies">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag gold">Exclusivités & Sorties Futures</span>
+          <h2 class="section-title">Films <strong class="brand-gold">Prochainement</strong> à l'affiche</h2>
+          <p class="section-subtitle">Calendrier officiel des sorties programmées avec Les Films 26 pour United Cinema Mbankomo.</p>
+        </div>
+
+        {% for group in upcoming_groups %}
+        <!-- DYNAMIC MONTH GROUP: {{ group.month_label }} -->
+        <div class="upcoming-month-header">
+          <span class="month-badge">{{ group.month_label }}</span>
+          <div class="month-line"></div>
+        </div>
+
+        <div class="movies-grid">
+          {% for movie in group.movies %}
+          <article class="movie-card">
+            <div class="movie-poster-wrap">
+              {% if movie.is_media %}
+                <img src="{{ movie.image }}" alt="Affiche du film {{ movie.title }}" class="movie-poster" loading="lazy">
+              {% elif movie.image %}
+                <img src="{% static movie.image %}" alt="Affiche du film {{ movie.title }}" class="movie-poster" loading="lazy">
+              {% else %}
+                <div style="width: 100%; height: 350px; background: #111e0c; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #fff;">🎬</div>
+              {% endif %}
+              <span class="poster-badge-top-left" style="background: var(--color-gold-primary); color:#000;">Sortie</span>
+              <span class="poster-badge-top-right {% if movie.age_badge == '-16' %}rating-16{% elif movie.age_badge == '-12' %}rating-12{% else %}rating-tp{% endif %}">
+                {{ movie.age_badge }}
+              </span>
+              <div class="poster-release-banner">
+                <span>🗓️ {{ movie.release_date }}</span>
+              </div>
+            </div>
+
+            <div class="movie-body">
+              <!-- Name in Bold -->
+              <h3 class="movie-title-bold">
+                {% if movie.slug %}
+                  <a href="{% url 'films:details' slug=movie.slug %}" style="color: inherit; text-decoration: none;">{{ movie.title }}</a>
+                {% else %}
+                  {{ movie.title }}
+                {% endif %}
+              </h3>
+
+              <div class="movie-meta-row">
+                <span class="meta-chip duration">⏱ {{ movie.duration }}</span>
+                <span class="meta-chip format">{{ movie.format }}</span>
+                <span class="meta-chip">🏷️ {{ movie.age_rating }}</span>
+              </div>
+
+              <div class="movie-genre">{{ movie.genre }}</div>
+
+              <!-- Synopsis -->
+              <p class="movie-synopsis">{{ movie.synopsis }}</p>
+
+              <div class="movie-actions">
+                <button type="button" class="btn-card-reserve" onclick="openReservationModal('{{ movie.title|escapejs }}', 'Sortie : {{ movie.release_date|escapejs }}')" style="background: linear-gradient(135deg, #d49b00 0%, #a37200 100%);" title="Pré-réserver vos places sur WhatsApp">
+                  <span>🎟️ Pré-réserver</span>
+                </button>
+                {% if movie.slug %}
+                <a href="{% url 'films:details' slug=movie.slug %}" class="btn-book-ticket" style="background: #fdf8e7; color: var(--color-gold-dark); border: 1px solid rgba(226,165,0,0.3); text-decoration: none;">
+                  <span>Fiche film</span>
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+          <p>Aucun film à venir programmé pour le moment.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         PROMO PACKAGES BANNER
+         Promoting the Loisirs, Evasion, Spa & Beauty packages with direct CTA to /packages/
+         ========================================================================= -->
+    <section class="section-row packages-home-banner-row" style="background: linear-gradient(135deg, #0e4400 0%, #1b8100 60%, #125700 100%); color: #ffffff; padding: 3.5rem 0; position: relative; overflow: hidden;">
+      <div class="container" style="position: relative; z-index: 2;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;">
+          <div style="flex: 1 1 550px; max-width: 680px;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(226, 165, 0, 0.2); border: 1px solid rgba(226, 165, 0, 0.5); padding: 0.35rem 1rem; border-radius: 9999px; margin-bottom: 1rem;">
+              <span style="color: #ffd768; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">✨ Formules Tout-en-Un United Hotel & Cinéma</span>
+            </div>
+            <h2 style="font-family: var(--font-heading); font-size: clamp(1.6rem, 3.5vw, 2.3rem); font-weight: 800; color: #ffffff; line-height: 1.25; margin-bottom: 0.85rem;">
+              Découvrez nos <span style="color: var(--color-gold-light);">Différents Packages</span> Loisirs & Bien-Être !
+            </h2>
+            <p style="font-size: 1.05rem; line-height: 1.6; color: rgba(255, 255, 255, 0.9); margin-bottom: 1.5rem;">
+              Piscine, Cinéma 3D Dolby, Billard, Hammam/Sauna, Massage relaxant, Réalité Virtuelle et Navette aller-retour à partir de <strong>5 000 FCFA</strong> seulement.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+              <a href="{% url 'packages' %}" class="btn-packages-hero" style="background: linear-gradient(135deg, #f7c033 0%, #e2a500 100%); color: #123d00; padding: 0.9rem 1.8rem; border-radius: 9999px; font-weight: 800; text-decoration: none; font-size: 1rem; display: inline-flex; align-items: center; gap: 0.6rem; box-shadow: 0 8px 20px rgba(0,0,0,0.25); transition: transform 0.2s ease;">
+                <span>🎁 Voir les 5 Packages & Réserver</span>
+                <span>➔</span>
+              </a>
+              <a href="https://wa.me/237680522222?text=Bonjour%20United%20Hotel%20%26%20Cin%C3%A9ma%2C%20je%20souhaite%20des%20informations%20sur%20vos%20packages%20loisirs%20et%20bien-%C3%AAtre." target="_blank" rel="noopener" style="background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; padding: 0.9rem 1.6rem; border-radius: 9999px; font-weight: 700; text-decoration: none; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span>💬 WhatsApp Direct</span>
+              </a>
+            </div>
+          </div>
+
+          <div style="flex: 0 1 380px; display: flex; gap: 1rem; justify-content: center;">
+            <div style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 1.25rem; text-align: center; width: 100%;">
+              <div style="font-size: 2.2rem; margin-bottom: 0.35rem;">🏊‍♂️ 🎬 🧖‍♀️</div>
+              <div style="font-weight: 800; color: var(--color-gold-light); font-size: 1.15rem; margin-bottom: 0.25rem;">Packages Loisirs & Spa</div>
+              <p style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 0.75rem;">Formules individuelles & groupes dès 5 000 FCFA</p>
+              <a href="{% url 'packages' %}" style="display: block; background: #ffffff; color: var(--color-green-primary); padding: 0.55rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none;">Découvrir les flyers & tarifs</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         ROW 7 : GOOGLE MAP
+         Location: Centre administratif de mbankomo - yaounde - cameroun
+         ========================================================================= -->
+    <section class="section-row" id="location-map-row">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">Localisation & Accès</span>
+          <h2 class="section-title">Comment venir à <strong class="brand-green">United</strong> <strong class="brand-gold">Cinema</strong></h2>
+          <p class="section-subtitle">Situé au cœur du centre administratif de Mbankomo, à seulement quelques minutes de Yaoundé.</p>
+        </div>
+
+        <div class="map-section-grid">
+          <div class="map-info-card">
+            <h3>Coordonnées & Accès</h3>
+            
+            <div class="map-info-item">
+              <div class="map-info-icon">📍</div>
+              <div class="map-info-text">
+                <strong>Adresse :</strong>
+                <p>{{ cinema.location }}<br>(Complexe United Hotel ****, BP 17 091 Yaoundé)</p>
+              </div>
+            </div>
+
+            <div class="map-info-item">
+              <div class="map-info-icon">🚌</div>
+              <div class="map-info-text">
+                <strong>Navette Gratuite :</strong>
+                <p>Départ Ahala-Barrière vers Mbankomo pour toutes les séances à partir de 18h00. Retour assuré après le film.</p>
+              </div>
+            </div>
+
+            <div class="map-info-item">
+              <div class="map-info-icon">🚗</div>
+              <div class="map-info-text">
+                <strong>Parking Sécurisé :</strong>
+                <p>Parking gratuit et surveillé 24h/24 pour tous les véhicules et deux-roues de notre clientèle.</p>
+              </div>
+            </div>
+
+            <div class="map-info-item">
+              <div class="map-info-icon">🕒</div>
+              <div class="map-info-text">
+                <strong>Jours d'ouverture :</strong>
+                <p>Du Mardi au Dimanche (séances en matinée, après-midi et soirée selon la programmation).</p>
+              </div>
+            </div>
+
+            <a href="https://maps.google.com/?q=Mbankomo+Yaounde+Cameroun" target="_blank" rel="noopener noreferrer" class="btn-book-ticket" style="margin-top: 1rem; padding: 0.8rem 1.6rem;">
+              <span>Ouvrir dans Google Maps</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            </a>
+          </div>
+
+          <!-- Embedded Google Map iframe -->
+          <div class="map-embed-wrapper">
+            <iframe 
+              class="map-embed-iframe"
+              title="Carte de localisation de United Cinema Mbankomo"
+              src="https://maps.google.com/maps?q=Centre+Administratif+Mbankomo+Yaounde+Cameroun&t=&z=14&ie=UTF8&iwloc=&output=embed"
+              loading="lazy" 
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       ROW 8 : FOOTER
+       Address, Mail, Phone number, Socials & Credits.
+       ========================================================================= -->
+  <footer class="main-footer" id="footer-row">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <div class="footer-logo">
+            <img src="{% static 'logo.jpg' %}" alt="Logo United Cinema">
+            <span class="footer-brand-title">
+              <span class="text-green">UNITED</span> <span class="text-gold">CINEMA</span>
+            </span>
+          </div>
+          <p class="footer-about">
+            Votre destination cinéma d'exception au Centre Administratif de Mbankomo. Projection numérique haute définition, 3D immersive et confort VIP.
+          </p>
+          <div class="footer-slogan">{{ cinema.slogan }}</div>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="#now-showing">🎬 Films à l'affiche</a></li>
+            <li><a href="#upcoming-movies">⏳ Prochainement</a></li>
+            <li><a href="{% url 'films:list' %}">🎞️ Catalogue complet</a></li>
+            <li><a href="{% url 'packages' %}">🎁 Nos Packages (Loisirs & Bien-être)</a></li>
+            {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+            <li><a href="{% url 'dashboard:home' %}">📊 Tableau de bord Admin</a></li>
+            {% endif %}
+            <li><a href="#schedule-row">📅 Programme de la semaine</a></li>
+            <li><a href="#characteristics-row">✨ Nos équipements</a></li>
+            <li><a href="#location-map-row">📍 Plan d'accès</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Tarifs Séances</h4>
+          <ul class="footer-links">
+            <li><a href="#schedule-row">Séance Classique : <strong>3 000 XAF</strong></a></li>
+            <li><a href="#schedule-row">Enfants (-12 ans) : <strong>1 500 XAF</strong></a></li>
+            <li><a href="#schedule-row">Lunettes 3D : <strong>1 500 XAF</strong></a></li>
+            <li><a href="#schedule-row">Première : <strong>5 000 XAF</strong></a></li>
+            <li><a href="#schedule-row">Avant-Première : <strong>5 000 XAF</strong></a></li>
+          </ul>
+        </div>
+
+        <div class="footer-contact-col">
+          <h4 class="footer-col-title">Contact & Réservations</h4>
+          <ul class="footer-contact-list">
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">📍</span>
+              <span><strong>Adresse :</strong> {{ cinema.address }}</span>
+            </li>
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">📞</span>
+              <span>
+                <strong>Téléphones :</strong><br>
+                <a href="tel:+237680522222">{{ cinema.phone_primary }}</a><br>
+                <a href="tel:+237222315900">{{ cinema.phone_secondary }}</a><br>
+                <a href="tel:+237651466938">{{ cinema.phone_mobile }}</a>
+              </span>
+            </li>
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">✉️</span>
+              <span>
+                <strong>Email Réservations :</strong><br>
+                <a href="mailto:{{ cinema.email_reservation }}">{{ cinema.email_reservation }}</a>
+              </span>
+            </li>
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">🌐</span>
+              <span>
+                <strong>Informations :</strong><br>
+                <a href="mailto:{{ cinema.email_info }}">{{ cinema.email_info }}</a>
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 <strong>United Cinema</strong> — Tous droits réservés. Design inspiré de <a href="https://cinemas.films26.fr/" target="_blank" rel="noopener" style="color:var(--color-gold-primary); text-decoration:underline;">Les Films 26</a>.
+        </div>
+        <div class="social-links">
+          <a href="https://facebook.com/unitedcinema" target="_blank" rel="noopener" class="social-btn" title="Facebook" aria-label="Facebook">f</a>
+          <a href="https://instagram.com/unitedcinema" target="_blank" rel="noopener" class="social-btn" title="Instagram" aria-label="Instagram">📸</a>
+          <a href="https://wa.me/237680522222" target="_blank" rel="noopener" class="social-btn" title="WhatsApp" aria-label="WhatsApp">💬</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'slider.js' %}"></script>
+  {% include 'includes/reservation_modal.html' %}
+</body>
+</html>

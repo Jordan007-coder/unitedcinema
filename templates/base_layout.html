@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}United Cinema | Centre Administratif de Mbankomo{% endblock %}</title>
+  <link rel="icon" type="image/jpeg" href="{% static 'logo.jpg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+  <!-- Top Info Notice Bar -->
+  <div class="top-notice-bar">
+    <span>🎬 Navette gratuite Ahala ↔ Mbankomo pour toutes les séances à partir de 18h00 !</span>
+    <a href="{% url 'home' %}#schedule-row">Voir les horaires de la semaine</a>
+  </div>
+
+  <!-- Main Header -->
+  <header class="main-header" id="header-row">
+    <div class="header-container">
+      <a href="{% url 'home' %}" class="brand-link" title="United Cinema - Accueil">
+        <img src="{% static 'logo.jpg' %}" alt="Logo United Cinema" class="brand-logo-img">
+        <div class="brand-title-wrap">
+          <span class="brand-name">
+            <span class="brand-green">UNITED</span> <span class="brand-gold">CINEMA</span>
+          </span>
+          <span class="brand-location">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            Centre Administratif de Mbankomo - Yaoundé
+          </span>
+        </div>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <nav class="main-nav" id="mainNav" aria-label="Navigation principale">
+        <ul>
+          <li><a href="{% url 'home' %}" class="nav-link">🏠 Accueil</a></li>
+          <li><a href="{% url 'home' %}#now-showing" class="nav-link">🎬 À l'affiche</a></li>
+          <li><a href="{% url 'home' %}#upcoming-movies" class="nav-link">⏳ Prochainement</a></li>
+          <li><a href="{% url 'films:list' %}" class="nav-link">🎞️ Catalogue</a></li>
+          <li><a href="{% url 'packages' %}" class="nav-link nav-link-packages">🎁 Packages</a></li>
+          <li>
+            <button type="button" class="btn-nav-reserve" onclick="openReservationModal()" title="Réserver vos places sur WhatsApp">
+              <span>🎟️ Réserver</span>
+            </button>
+          </li>
+          {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+          <li>
+            <a href="{% url 'dashboard:home' %}" class="btn-nav-create">
+              <span>📊 Dashboard Admin</span>
+            </a>
+          </li>
+          {% endif %}
+          
+          {% if user.is_authenticated %}
+          <li style="display: flex; align-items: center; gap: 0.5rem; margin-left: 0.5rem;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-green-primary);">👤 {{ user.username }}</span>
+            <form class="logout-link" action="{% url 'accounts:logout' %}" method="POST" style="margin: 0;">
+              {% csrf_token %}
+              <button type="submit" style="background: none; border: 1px solid #ddd; padding: 0.3rem 0.75rem; border-radius: 9999px; font-size: 0.8rem; cursor: pointer;">Déconnexion</button>
+            </form>
+          </li>
+          {% else %}
+          <li><a href="{% url 'accounts:login' %}" class="nav-link" style="font-size: 0.88rem;">Connexion</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-menu-toggle" id="mobileMenuBtn" aria-label="Ouvrir le menu">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Global Flash Messages -->
+  {% if messages %}
+  <div class="alert-messages">
+    {% for message in messages %}
+      <div class="alert-item {% if message.tags %}alert-{{ message.tags }}{% else %}alert-success{% endif %}">
+        <span>{{ message }}</span>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; font-size:1.1rem; cursor:pointer; margin-left:1rem;">✕</button>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Page Content -->
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="main-footer" id="footer-row">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand-col">
+          <div class="footer-logo">
+            <img src="{% static 'logo.jpg' %}" alt="Logo United Cinema">
+            <span class="footer-brand-title">
+              <span class="text-green">UNITED</span> <span class="text-gold">CINEMA</span>
+            </span>
+          </div>
+          <p class="footer-about">
+            Votre complexe cinématographique d'exception au Centre Administratif de Mbankomo. Salles climatisées, son DOLBY Atmos et fauteuils grand confort en cuir.
+          </p>
+          <div class="footer-slogan">Profitez de la différence !!!</div>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'home' %}#now-showing">🎬 Films à l'affiche</a></li>
+            <li><a href="{% url 'home' %}#upcoming-movies">⏳ Prochainement</a></li>
+            <li><a href="{% url 'films:list' %}">🎞️ Catalogue complet</a></li>
+            <li><a href="{% url 'packages' %}">🎁 Nos Packages (Loisirs & Bien-être)</a></li>
+            {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+            <li><a href="{% url 'dashboard:home' %}">📊 Tableau de bord Admin</a></li>
+            {% endif %}
+            <li><a href="{% url 'home' %}#schedule-row">📅 Programme de la semaine</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-links-col">
+          <h4 class="footer-col-title">Tarifs Séances</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'home' %}#schedule-row">Séance Classique : <strong>3 000 XAF</strong></a></li>
+            <li><a href="{% url 'home' %}#schedule-row">Enfants (-12 ans) : <strong>1 500 XAF</strong></a></li>
+            <li><a href="{% url 'home' %}#schedule-row">Lunettes 3D : <strong>1 500 XAF</strong></a></li>
+            <li><a href="{% url 'home' %}#schedule-row">Première : <strong>5 000 XAF</strong></a></li>
+            <li><a href="{% url 'home' %}#schedule-row">Avant-Première : <strong>5 000 XAF</strong></a></li>
+          </ul>
+        </div>
+
+        <div class="footer-contact-col">
+          <h4 class="footer-col-title">Contact & Infos</h4>
+          <ul class="footer-contact-list">
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">📍</span>
+              <span><strong>Adresse :</strong> Centre administratif de Mbankomo - Yaoundé</span>
+            </li>
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">📞</span>
+              <span><strong>Téléphone :</strong> (+237) 680 52 22 22</span>
+            </li>
+            <li class="footer-contact-item">
+              <span class="footer-contact-icon">✉️</span>
+              <span><strong>Email :</strong> reservations@unitedhotelsgroup.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 <strong>United Cinema</strong> — Tous droits réservés.</div>
+        <div class="social-links">
+          <a href="#" class="social-btn" title="Facebook">f</a>
+          <a href="#" class="social-btn" title="Instagram">📸</a>
+          <a href="https://wa.me/237680522222" target="_blank" rel="noopener" class="social-btn" title="WhatsApp">💬</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  {% include 'includes/reservation_modal.html' %}
+</body>
+</html>
