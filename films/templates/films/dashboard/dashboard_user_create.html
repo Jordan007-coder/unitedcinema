@@ -1,0 +1,267 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Créer un Utilisateur avec Tâches Spécifiques | Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:user_list' %}" style="color:var(--color-green-primary);">Utilisateurs</a> &nbsp;›&nbsp; 
+<strong>Créer un Utilisateur</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">✨ Créer un Nouvel Utilisateur</h1>
+    <p class="dash-subtitle">Définissez les identifiants et choisissez précisément les tâches autorisées via les cases à cocher ci-dessous.</p>
+  </div>
+
+  <div>
+    <a href="{% url 'dashboard:user_list' %}" class="btn-dash-ghost">
+      <span>← Retour à la liste</span>
+    </a>
+  </div>
+</div>
+
+<div style="max-width: 900px; margin: 0 auto;">
+  <div class="film-form-card">
+    <form action="{% url 'dashboard:user_create' %}" method="POST" id="createUserForm">
+      {% csrf_token %}
+
+      <!-- Section 1 : Identifiants de Connexion -->
+      <div class="form-section-title">
+        <span>👤 1. Identifiants du Compte</span>
+      </div>
+
+      <div class="form-row-2col">
+        <div class="form-group">
+          <label class="form-label" for="id_username">
+            <span class="form-label-text"><strong>Nom d'utilisateur</strong> <span class="form-label-required">*</span></span>
+          </label>
+          <input 
+            type="text" 
+            name="username" 
+            id="id_username" 
+            required 
+            class="form-control" 
+            placeholder="ex: Jean_Modérateur ou Sarah_Cinema"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_email">
+            <span class="form-label-text">Adresse Email</span>
+            <span class="form-label-hint">Optionnel</span>
+          </label>
+          <input 
+            type="email" 
+            name="email" 
+            id="id_email" 
+            class="form-control" 
+            placeholder="ex: jean@unitedcinema.com"
+          >
+        </div>
+      </div>
+
+      <div class="form-row-2col">
+        <div class="form-group">
+          <label class="form-label" for="id_password">
+            <span class="form-label-text"><strong>Mot de passe initial</strong> <span class="form-label-required">*</span></span>
+            <span class="form-label-hint">Min. 6 caractères</span>
+          </label>
+          <input 
+            type="password" 
+            name="password" 
+            id="id_password" 
+            required 
+            class="form-control" 
+            placeholder="••••••••••••"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_password_confirm">
+            <span class="form-label-text"><strong>Confirmer le mot de passe</strong> <span class="form-label-required">*</span></span>
+          </label>
+          <input 
+            type="password" 
+            name="password_confirm" 
+            id="id_password_confirm" 
+            required 
+            class="form-control" 
+            placeholder="••••••••••••"
+          >
+        </div>
+      </div>
+
+      <!-- Section 2 : Tâches Spécifiques (Checkboxes) -->
+      <div class="form-section-title" style="margin-top: 2rem;">
+        <span>🎯 2. Tâches Spécifiques Attribuées (Cases à cocher)</span>
+      </div>
+      
+      <p style="color: var(--color-text-muted); font-size: 0.95rem; margin-bottom: 1.25rem;">
+        Cochez les tâches que cet utilisateur aura le droit d'effectuer au sein de l'application :
+      </p>
+
+      <!-- Quick Preset Buttons -->
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn-dash-ghost" id="btnSelectAllTasks" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+          ☑️ Tout cocher
+        </button>
+        <button type="button" class="btn-dash-ghost" id="btnPresetAddOnly" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+          🎬 Ajout de films uniquement
+        </button>
+        <button type="button" class="btn-dash-ghost" id="btnPresetEditor" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+          ✏️ Ajout & Modification
+        </button>
+        <button type="button" class="btn-dash-ghost" id="btnDeselectAll" style="font-size: 0.82rem; padding: 0.4rem 0.9rem;">
+          ⬜ Tout désélectionner
+        </button>
+      </div>
+
+      <!-- Checkbox Cards Grid -->
+      <div class="task-checkbox-grid">
+
+        <!-- Task 1: Add movies -->
+        <label class="task-checkbox-card" for="task_add_film">
+          <div class="task-card-header">
+            <div class="task-card-icon green">➕</div>
+            <div class="task-card-title-wrap">
+              <span class="task-card-title">Ajouter des films</span>
+              <span class="task-card-perm-name">films.add_film</span>
+            </div>
+            <input type="checkbox" name="task_add_film" id="task_add_film" class="custom-task-checkbox" checked>
+          </div>
+          <p class="task-card-desc">
+            Autorise l'utilisateur à créer et publier de nouveaux films dans le catalogue avec affiches, synopsis et technologies de projection.
+          </p>
+        </label>
+
+        <!-- Task 2: Edit movies -->
+        <label class="task-checkbox-card" for="task_change_film">
+          <div class="task-card-header">
+            <div class="task-card-icon gold">✏️</div>
+            <div class="task-card-title-wrap">
+              <span class="task-card-title">Modifier des films</span>
+              <span class="task-card-perm-name">films.change_film</span>
+            </div>
+            <input type="checkbox" name="task_change_film" id="task_change_film" class="custom-task-checkbox" checked>
+          </div>
+          <p class="task-card-desc">
+            Autorise l'utilisateur à mettre à jour les fiches de films existantes, changer l'affiche, éditer les résumés et modifier les dates.
+          </p>
+        </label>
+
+        <!-- Task 3: Delete movies -->
+        <label class="task-checkbox-card" for="task_delete_film">
+          <div class="task-card-header">
+            <div class="task-card-icon red">🗑️</div>
+            <div class="task-card-title-wrap">
+              <span class="task-card-title">Supprimer des films</span>
+              <span class="task-card-perm-name">films.delete_film</span>
+            </div>
+            <input type="checkbox" name="task_delete_film" id="task_delete_film" class="custom-task-checkbox">
+          </div>
+          <p class="task-card-desc">
+            Autorise la suppression définitive d'un film du catalogue. Recommandé uniquement pour les modérateurs de confiance.
+          </p>
+        </label>
+
+        <!-- Task 4: Dashboard access -->
+        <label class="task-checkbox-card" for="task_staff_access">
+          <div class="task-card-header">
+            <div class="task-card-icon blue">📊</div>
+            <div class="task-card-title-wrap">
+              <span class="task-card-title">Accès au tableau de bord</span>
+              <span class="task-card-perm-name">is_staff</span>
+            </div>
+            <input type="checkbox" name="task_staff_access" id="task_staff_access" class="custom-task-checkbox" checked>
+          </div>
+          <p class="task-card-desc">
+            Permet à l'utilisateur de se connecter à cet espace d'administration. Requis pour exécuter ses tâches en toute sécurité.
+          </p>
+        </label>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions-bar" style="margin-top: 2.5rem;">
+        <a href="{% url 'dashboard:user_list' %}" class="btn-dash-ghost">
+          Annuler
+        </a>
+
+        <button type="submit" class="btn-submit-main">
+          <span>✨ Créer l'Utilisateur avec ses Droits</span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const chkAdd = document.getElementById('task_add_film');
+  const chkChange = document.getElementById('task_change_film');
+  const chkDelete = document.getElementById('task_delete_film');
+  const chkStaff = document.getElementById('task_staff_access');
+
+  // Highlight card when checkbox is checked
+  function updateCardStyles() {
+    document.querySelectorAll('.task-checkbox-card').forEach(card => {
+      const chk = card.querySelector('.custom-task-checkbox');
+      if (chk && chk.checked) {
+        card.classList.add('selected');
+      } else {
+        card.classList.remove('selected');
+      }
+    });
+  }
+
+  document.querySelectorAll('.custom-task-checkbox').forEach(chk => {
+    chk.addEventListener('change', () => {
+      // If any task is checked, auto-check staff access
+      if (chkAdd.checked || chkChange.checked || chkDelete.checked) {
+        chkStaff.checked = true;
+      }
+      updateCardStyles();
+    });
+  });
+
+  updateCardStyles();
+
+  // Presets
+  document.getElementById('btnSelectAllTasks').addEventListener('click', () => {
+    chkAdd.checked = true;
+    chkChange.checked = true;
+    chkDelete.checked = true;
+    chkStaff.checked = true;
+    updateCardStyles();
+  });
+
+  document.getElementById('btnPresetAddOnly').addEventListener('click', () => {
+    chkAdd.checked = true;
+    chkChange.checked = false;
+    chkDelete.checked = false;
+    chkStaff.checked = true;
+    updateCardStyles();
+  });
+
+  document.getElementById('btnPresetEditor').addEventListener('click', () => {
+    chkAdd.checked = true;
+    chkChange.checked = true;
+    chkDelete.checked = false;
+    chkStaff.checked = true;
+    updateCardStyles();
+  });
+
+  document.getElementById('btnDeselectAll').addEventListener('click', () => {
+    chkAdd.checked = false;
+    chkChange.checked = false;
+    chkDelete.checked = false;
+    chkStaff.checked = false;
+    updateCardStyles();
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,352 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}{{ film.title }} | United Cinema{% endblock %}
+
+{% block content %}
+<section class="detail-hero-section">
+  <div class="container">
+
+    <!-- Breadcrumbs & Quick Nav -->
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+      <div style="font-size: 0.92rem; color: var(--color-text-muted);">
+        <a href="{% url 'home' %}" style="color: var(--color-green-primary);">Accueil</a> &nbsp;/&nbsp;
+        <a href="{% url 'films:list' %}" style="color: var(--color-green-primary);">Catalogue</a> &nbsp;/&nbsp;
+        <span>{{ film.title }}</span>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'films:create' %}" class="btn-hero-ghost" style="background: var(--color-green-primary); color: #ffffff;">
+          <span>➕ Ajouter un autre film</span>
+        </a>
+        <a href="{% url 'films:list' %}" class="btn-hero-ghost" style="background: #f0f7ec; color: var(--color-green-dark); border-color: rgba(27,129,0,0.2);">
+          <span>← Catalogue</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Detail Layout -->
+    <div class="detail-layout-grid">
+      <!-- Poster Left -->
+      <div class="detail-poster-card">
+        {% if film.thumb %}
+          <img src="{{ film.thumb.url }}" alt="Affiche {{ film.title }}" class="detail-poster-img">
+        {% else %}
+          <div style="aspect-ratio: 2/3; display: flex; align-items: center; justify-content: center; background: #111e0c; color: rgba(255,255,255,0.4); font-size: 1.1rem; text-align: center; padding: 2rem;">
+            🎬 Pas d'affiche officielle
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Information Right -->
+      <div class="detail-content">
+        <span class="section-tag">Fiche Film</span>
+        <h1 style="margin-top: 0.5rem;">{{ film.title }}</h1>
+
+        <div class="detail-meta-pills">
+          <span class="meta-chip format" style="font-size: 0.95rem; padding: 0.4rem 1rem;">
+            🎥 {{ film.format_type|default:"2D NUMÉRIQUE" }}
+          </span>
+          <span class="meta-chip duration" style="font-size: 0.95rem; padding: 0.4rem 1rem;">
+            📅 {{ film.date_out|default:"À l'affiche" }}
+          </span>
+          <span class="meta-chip" style="font-size: 0.95rem; padding: 0.4rem 1rem;">
+            🏷️ {{ film.genre|default:"Cinéma" }}
+          </span>
+        </div>
+
+        <div class="detail-synopsis-box">
+          <h3 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--color-green-primary); margin-bottom: 0.75rem;">
+            Synopsis officiel
+          </h3>
+          <p>{{ film.synopsis|linebreaks }}</p>
+        </div>
+
+        <!-- Movie Details Table / Info Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div style="background: #ffffff; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(27,129,0,0.15); box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 600;">Salle & Technologie</div>
+            <div style="font-weight: 700; color: var(--color-green-dark); font-size: 1.05rem; margin-top: 0.25rem;">DOLBY ATMOS / 3D</div>
+          </div>
+          <div style="background: #ffffff; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(27,129,0,0.15); box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 600;">Lieu de Projection</div>
+            <div style="font-weight: 700; color: var(--color-green-dark); font-size: 1.05rem; margin-top: 0.25rem;">United Cinema Mbankomo</div>
+          </div>
+          <div style="background: #ffffff; padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(27,129,0,0.15); box-shadow: var(--shadow-sm);">
+            <div style="font-size: 0.8rem; color: var(--color-text-muted); text-transform: uppercase; font-weight: 600;">Publié par</div>
+            <div style="font-weight: 700; color: var(--color-green-dark); font-size: 1.05rem; margin-top: 0.25rem;">{{ film.author.username|default:"Administration" }}</div>
+          </div>
+        </div>
+
+        <!-- Fast WhatsApp Reservation Box -->
+        <div class="detail-reservation-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span class="reservation-badge-tag">🎟️ Réservation WhatsApp</span>
+              <h3 style="margin: 0.25rem 0 0; font-size: 1.3rem; color: var(--color-green-dark); font-family: var(--font-heading);">
+                Réserver vos places pour {{ film.title }}
+              </h3>
+            </div>
+            <div style="font-size: 0.88rem; color: #166534; font-weight: 700;">
+              WhatsApp Direct : (+237) 680 52 22 22
+            </div>
+          </div>
+
+          <p style="font-size: 0.9rem; color: #374151; margin-bottom: 1.25rem; line-height: 1.45;">
+            Choisissez vos places adultes et enfants (-12 ans), la date et l'horaire souhaités. Votre message sera automatiquement préparé pour le compte WhatsApp officiel du cinéma.
+          </p>
+
+          <!-- Dual Seats Counters -->
+          <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-size: 0.88rem; font-weight: 700; color: #1e3a24; margin-bottom: 0.5rem;">
+              🎟️ Places réservées (Adultes & Enfants) :
+            </label>
+            <div class="res-dual-counter-grid">
+              <!-- Adults -->
+              <div class="res-counter-card" style="background: #ffffff;">
+                <div class="res-counter-header">
+                  <span class="res-counter-title">👤 Adultes</span>
+                  <span class="res-counter-rate">3 000 XAF</span>
+                </div>
+                <div class="res-seat-counter-wrap">
+                  <button type="button" class="res-seat-btn" onclick="adjustDetailAdults(-1)" id="btnDetailAdultMinus">−</button>
+                  <div class="res-seat-display-box">
+                    <span class="res-seat-count-num" id="detailAdultNum">1</span>
+                    <span class="res-seat-count-label" id="detailAdultLabel">adulte</span>
+                  </div>
+                  <button type="button" class="res-seat-btn" onclick="adjustDetailAdults(1)">+</button>
+                </div>
+              </div>
+
+              <!-- Kids -->
+              <div class="res-counter-card" style="background: #ffffff;">
+                <div class="res-counter-header">
+                  <span class="res-counter-title">🧒 Enfants (-12 ans)</span>
+                  <span class="res-counter-rate gold">1 500 XAF</span>
+                </div>
+                <div class="res-seat-counter-wrap">
+                  <button type="button" class="res-seat-btn" onclick="adjustDetailKids(-1)" id="btnDetailKidsMinus" disabled>−</button>
+                  <div class="res-seat-display-box">
+                    <span class="res-seat-count-num" id="detailKidsNum">0</span>
+                    <span class="res-seat-count-label" id="detailKidsLabel">enfant</span>
+                  </div>
+                  <button type="button" class="res-seat-btn" onclick="adjustDetailKids(1)">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Date & Time (Calendar & Clock) -->
+          <div class="res-datetime-grid" style="margin-bottom: 1.25rem;">
+            <div>
+              <label class="res-label" for="detailDateInput">
+                <span>📅 Date de la séance *</span>
+                <span class="res-label-hint">Calendrier</span>
+              </label>
+              <input type="date" id="detailDateInput" class="res-input" required>
+            </div>
+            <div>
+              <label class="res-label" for="detailTimeInput">
+                <span>⏰ Heure de la séance *</span>
+                <span class="res-label-hint">Horloge</span>
+              </label>
+              <input type="time" id="detailTimeInput" class="res-input" value="18:00" required>
+            </div>
+          </div>
+
+          <!-- Customer Name (REQUIRED) -->
+          <div style="margin-bottom: 1.25rem;">
+            <label class="res-label" for="detailCustomerName">
+              <span>👤 Nom complet du client *</span>
+              <span class="res-label-hint" style="color: #dc2626; font-weight: 700;">Requis</span>
+            </label>
+            <input type="text" id="detailCustomerName" class="res-input" placeholder="ex: Jordan, Alain Mbappe, Marie Ondoa..." required>
+            <div id="detailNameError" class="res-field-error" style="display: none;">
+              ⚠️ Veuillez saisir votre nom complet pour confirmer la réservation.
+            </div>
+          </div>
+
+          <!-- Price Summary Card -->
+          <div class="res-price-summary-card">
+            <div class="res-price-breakdown">
+              <div>Total estimé pour votre groupe :</div>
+              <div class="res-price-breakdown-math" id="detailPriceMath">1 Adulte × 3 000 XAF</div>
+              <div style="font-size: 0.76rem; color: #527957; margin-top: 2px;" id="detailTotalPlacesLabel">Total : 1 place</div>
+            </div>
+            <div class="res-price-total-badge">
+              <div class="res-price-total-label">Total à régler</div>
+              <div class="res-price-total-num" id="detailPriceTotal">3 000 XAF</div>
+            </div>
+          </div>
+
+          <button type="button" class="btn-whatsapp-redirect" onclick="submitDetailReservation('{{ film.title|escapejs }}')" style="font-size: 1.05rem; padding: 0.95rem 1.5rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c4.54 0 8.24 3.7 8.24 8.24 0 2.2-.86 4.27-2.42 5.82a8.188 8.188 0 0 1-5.82 2.42c-1.44 0-2.85-.38-4.08-1.11l-.29-.17-3.12.82.83-3.04-.19-.3a8.182 8.182 0 0 1-1.25-4.44c0-4.54 3.7-8.24 8.24-8.24zm4.52 11.64c-.25-.13-1.47-.72-1.7-.81-.23-.08-.39-.13-.56.13-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.13-1.06-.39-2.02-1.25-.75-.67-1.25-1.5-1.4-1.75-.14-.25-.02-.39.11-.51.11-.11.25-.29.37-.44.13-.14.17-.25.25-.42.08-.17.04-.31-.02-.44-.06-.13-.56-1.35-.77-1.85-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.18-.48-.3z"/>
+            </svg>
+            <span id="detailBtnText">📱 Réserver sur WhatsApp (680 52 22 22)</span>
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <a href="{% url 'home' %}#schedule-row" class="btn-submit-main" style="text-decoration: none; display: inline-flex;">
+            <span>📅 Consulter le Programme & Horaires</span>
+          </a>
+          <button type="button" class="btn-hero-ghost" onclick="openReservationModal('{{ film.title|escapejs }}', '{{ film.date_out|default:"Séance au choix"|escapejs }}')" style="background: #ffffff; color: var(--color-green-primary); border-color: var(--color-green-primary);">
+            <span>⚙️ Choisir un autre film</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  let detailAdultCount = 1;
+  let detailKidsCount = 0;
+  const detailAdultUnitPrice = 3000;
+  const detailKidUnitPrice = 1500;
+
+  function initDetailDates() {
+    const dInput = document.getElementById('detailDateInput');
+    if (dInput && !dInput.value) {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      dInput.value = `${yyyy}-${mm}-${dd}`;
+      dInput.min = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+
+  function adjustDetailAdults(delta) {
+    let newCount = detailAdultCount + delta;
+    if (newCount < 0) newCount = 0;
+    if (newCount === 0 && detailKidsCount === 0) newCount = 1;
+    if (newCount > 30) newCount = 30;
+    detailAdultCount = newCount;
+    updateDetailView();
+  }
+
+  function adjustDetailKids(delta) {
+    let newCount = detailKidsCount + delta;
+    if (newCount < 0) newCount = 0;
+    if (detailAdultCount === 0 && newCount === 0) newCount = 1;
+    if (newCount > 30) newCount = 30;
+    detailKidsCount = newCount;
+    updateDetailView();
+  }
+
+  function updateDetailView() {
+    const aNum = document.getElementById('detailAdultNum');
+    const aLabel = document.getElementById('detailAdultLabel');
+    const aMinus = document.getElementById('btnDetailAdultMinus');
+
+    const kNum = document.getElementById('detailKidsNum');
+    const kLabel = document.getElementById('detailKidsLabel');
+    const kMinus = document.getElementById('btnDetailKidsMinus');
+
+    const mathEl = document.getElementById('detailPriceMath');
+    const totalEl = document.getElementById('detailPriceTotal');
+    const labelTotal = document.getElementById('detailTotalPlacesLabel');
+
+    if (aNum) aNum.textContent = detailAdultCount;
+    if (aLabel) aLabel.textContent = detailAdultCount > 1 ? 'adultes' : 'adulte';
+    if (aMinus) aMinus.disabled = (detailAdultCount === 0 || (detailAdultCount === 1 && detailKidsCount === 0));
+
+    if (kNum) kNum.textContent = detailKidsCount;
+    if (kLabel) kLabel.textContent = detailKidsCount > 1 ? 'enfants' : 'enfant';
+    if (kMinus) kMinus.disabled = (detailKidsCount === 0 || (detailKidsCount === 1 && detailAdultCount === 0));
+
+    const totalPlaces = detailAdultCount + detailKidsCount;
+    const totalAdultCost = detailAdultCount * detailAdultUnitPrice;
+    const totalKidCost = detailKidsCount * detailKidUnitPrice;
+    const total = totalAdultCost + totalKidCost;
+
+    let mathParts = [];
+    if (detailAdultCount > 0) mathParts.push(`${detailAdultCount} Adulte${detailAdultCount > 1 ? 's' : ''} (${totalAdultCost.toLocaleString('fr-FR')} XAF)`);
+    if (detailKidsCount > 0) mathParts.push(`${detailKidsCount} Enfant${detailKidsCount > 1 ? 's' : ''} (${totalKidCost.toLocaleString('fr-FR')} XAF)`);
+
+    if (mathEl) mathEl.textContent = mathParts.join(' + ') || '0 place';
+    if (totalEl) totalEl.textContent = `${total.toLocaleString('fr-FR')} XAF`;
+    if (labelTotal) labelTotal.textContent = `Total : ${totalPlaces} place${totalPlaces > 1 ? 's' : ''} au cinéma`;
+  }
+
+  function submitDetailReservation(filmTitle) {
+    const nameInput = document.getElementById('detailCustomerName');
+    const nameErr = document.getElementById('detailNameError');
+    const dateInput = document.getElementById('detailDateInput');
+    const timeInput = document.getElementById('detailTimeInput');
+
+    const customerName = (nameInput?.value || '').trim();
+    if (!customerName) {
+      if (nameErr) nameErr.style.display = 'block';
+      if (nameInput) {
+        nameInput.classList.add('input-error');
+        nameInput.focus();
+      }
+      return;
+    } else {
+      if (nameErr) nameErr.style.display = 'none';
+      if (nameInput) nameInput.classList.remove('input-error');
+    }
+
+    const totalPlaces = detailAdultCount + detailKidsCount;
+    if (totalPlaces < 1) {
+      alert('Veuillez sélectionner au moins 1 place.');
+      return;
+    }
+
+    let formattedDate = dateInput?.value || 'Aujourd’hui';
+    if (dateInput?.value) {
+      const parts = dateInput.value.split('-');
+      if (parts.length === 3) {
+        const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
+        formattedDate = dObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    }
+    const formattedTime = timeInput?.value ? `${timeInput.value.replace(':', 'h')}` : '18h00';
+    const total = (detailAdultCount * detailAdultUnitPrice) + (detailKidsCount * detailKidUnitPrice);
+
+    let messageLines = [
+      '🎬 *RÉSERVATION DE PLACES — UNITED CINEMA MBANKOMO*',
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      `👤 *Nom du client :* ${customerName}`,
+      `🍿 *Film :* ${filmTitle}`,
+      `📅 *Date de la séance :* ${formattedDate}`,
+      `⏰ *Heure de la séance :* ${formattedTime}`,
+      '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      '🎟️ *Détail des places réservées :*',
+    ];
+
+    if (detailAdultCount > 0) {
+      messageLines.push(`• *Adultes :* ${detailAdultCount} place${detailAdultCount > 1 ? 's' : ''} × 3 000 XAF = ${(detailAdultCount * detailAdultUnitPrice).toLocaleString('fr-FR')} XAF`);
+    }
+    if (detailKidsCount > 0) {
+      messageLines.push(`• *Enfants (-12 ans) :* ${detailKidsCount} place${detailKidsCount > 1 ? 's' : ''} × 1 500 XAF = ${(detailKidsCount * detailKidUnitPrice).toLocaleString('fr-FR')} XAF`);
+    }
+
+    messageLines.push(`• *Total des places :* ${totalPlaces} place${totalPlaces > 1 ? 's' : ''}`);
+    messageLines.push(`💰 *Montant total estimé :* ${total.toLocaleString('fr-FR')} XAF`);
+    messageLines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    messageLines.push('Bonjour United Cinema ! Merci de bien vouloir me confirmer la disponibilité et valider ma réservation. 🍿✨');
+
+    const encoded = encodeURIComponent(messageLines.join('\n'));
+    window.open(`https://wa.me/237680522222?text=${encoded}`, '_blank');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initDetailDates();
+    const nameInput = document.getElementById('detailCustomerName');
+    if (nameInput) {
+      nameInput.addEventListener('input', () => {
+        if (nameInput.value.trim() !== '') {
+          nameInput.classList.remove('input-error');
+          const err = document.getElementById('detailNameError');
+          if (err) err.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

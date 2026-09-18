@@ -1,0 +1,100 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Catalogue des Films | United Cinema{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="catalog-page-hero">
+  <div class="container">
+    <div class="form-hero-inner">
+      <div>
+        <h1 class="form-hero-title">
+          <span>🎞️ Catalogue des <span class="gold-accent">Films</span></span>
+        </h1>
+        <p class="form-hero-subtitle">
+          Retrouvez tous les films enregistrés dans la base de données de United Cinema.
+        </p>
+      </div>
+
+      <div class="form-hero-actions">
+        <a href="{% url 'films:create' %}" class="btn-submit-main" style="padding: 0.75rem 1.5rem; font-size: 0.95rem; text-decoration: none;">
+          <span>➕ Ajouter un nouveau film</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Films Grid Section -->
+<section class="section-row" style="background: #f8faf7; min-height: 50vh;">
+  <div class="container">
+    <div class="catalog-actions-bar">
+      <div>
+        <span style="font-weight: 700; color: var(--color-green-primary); font-size: 1.1rem;">
+          {{ films|length }} film{{ films|length|pluralize }} au total
+        </span>
+      </div>
+      <div>
+        <a href="{% url 'films:create' %}" class="btn-hero-ghost" style="background: var(--color-green-primary); color: #fff;">
+          <span>+ Ajouter un film</span>
+        </a>
+      </div>
+    </div>
+
+    {% if films %}
+    <div class="movies-grid">
+      {% for film in films %}
+      <article class="movie-card">
+        <div class="movie-poster-wrap">
+          {% if film.thumb %}
+            <img src="{{ film.thumb.url }}" alt="{{ film.title }}" class="movie-poster" loading="lazy">
+          {% else %}
+            <div style="width: 100%; height: 350px; background: #111e0c; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-weight: 600;">
+              🎬 Pas d'affiche
+            </div>
+          {% endif %}
+          <span class="poster-badge-top-left">Catalogue</span>
+          <span class="poster-badge-top-right rating-tp">{{ film.format_type|default:"2D" }}</span>
+        </div>
+
+        <div class="movie-body">
+          <h3 class="movie-title-bold">
+            <a href="{% url 'films:details' slug=film.slug %}">{{ film.title }}</a>
+          </h3>
+
+          <div class="movie-meta-row">
+            <span class="meta-chip duration">📅 {{ film.date_out|default:"Programmé" }}</span>
+            <span class="meta-chip format">{{ film.format_type|default:"2D NUMÉRIQUE" }}</span>
+          </div>
+
+          <div class="movie-genre">{{ film.genre|default:"Cinéma" }}</div>
+
+          <p class="movie-synopsis">{{ film.synopsis|truncatewords:25 }}</p>
+
+          <div class="movie-actions">
+            <button type="button" class="btn-card-reserve" onclick="openReservationModal('{{ film.title|escapejs }}', '{{ film.date_out|default:"Séance au choix"|escapejs }}')" title="Réserver sur WhatsApp (680 52 22 22)">
+              <span>🎟️ Réserver</span>
+            </button>
+            <a href="{% url 'films:details' slug=film.slug %}" class="btn-book-ticket" style="background: #f0f7ec; color: var(--color-green-dark); border: 1px solid rgba(27,129,0,0.25); text-decoration: none;">
+              <span>Fiche</span>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 4rem 1rem; background: #fff; border-radius: var(--radius-lg); border: 1px dashed #c0d8b4;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
+      <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--color-green-primary);">Aucun film dans le catalogue</h3>
+      <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Commencez par ajouter votre premier film dès maintenant !</p>
+      <a href="{% url 'films:create' %}" class="btn-submit-main" style="text-decoration: none;">
+        <span>➕ Ajouter un film</span>
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

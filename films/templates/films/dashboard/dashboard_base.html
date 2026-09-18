@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Administration | United Cinema{% endblock %}</title>
+  <link rel="icon" type="image/jpeg" href="{% static 'logo.jpg' %}">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body class="dashboard-body">
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+      <div class="dashboard-brand">
+        <a href="{% url 'dashboard:home' %}" class="dash-brand-link">
+          <img src="{% static 'logo.jpg' %}" alt="Logo" class="dash-logo-img">
+          <div>
+            <div class="dash-brand-name"><span class="text-green">UNITED</span> <span class="text-gold">CINEMA</span></div>
+            <div class="dash-brand-role">Administration & Gestion</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Current user badge -->
+      <div class="dash-user-card">
+        <div class="dash-user-avatar">
+          {% if user.is_superuser %}👑{% else %}👤{% endif %}
+        </div>
+        <div class="dash-user-info">
+          <div class="dash-user-name">{{ user.username }}</div>
+          <div class="dash-user-badge">
+            {% if user.is_superuser %}Super Administrateur{% elif user.is_staff %}Gestionnaire Staff{% else %}Membre{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="dash-nav">
+        <div class="dash-nav-section-title">Menu Principal</div>
+        <ul class="dash-nav-list">
+          <li>
+            <a href="{% url 'dashboard:home' %}" class="dash-nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+              <span class="dash-icon">📊</span>
+              <span>Vue d'ensemble</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:movie_list' %}" class="dash-nav-link {% if 'movie' in request.resolver_match.url_name %}active{% endif %}">
+              <span class="dash-icon">🎬</span>
+              <span>Gestion des Films</span>
+            </a>
+          </li>
+          {% if can_add or user.is_superuser %}
+          <li>
+            <a href="{% url 'dashboard:movie_add' %}" class="dash-nav-link">
+              <span class="dash-icon">➕</span>
+              <span>Ajouter un Film</span>
+            </a>
+          </li>
+          {% endif %}
+          <li>
+            <a href="{% url 'dashboard:schedule_update' %}" class="dash-nav-link {% if 'schedule' in request.resolver_match.url_name %}active{% endif %}">
+              <span class="dash-icon">📅</span>
+              <span>Programme Semaine</span>
+            </a>
+          </li>
+        </ul>
+
+        {% if user.is_superuser %}
+        <div class="dash-nav-section-title">Administration Système</div>
+        <ul class="dash-nav-list">
+          <li>
+            <a href="{% url 'dashboard:user_list' %}" class="dash-nav-link {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+              <span class="dash-icon">👥</span>
+              <span>Utilisateurs & Tâches</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'dashboard:user_create' %}" class="dash-nav-link">
+              <span class="dash-icon">✨</span>
+              <span>Créer un Utilisateur</span>
+            </a>
+          </li>
+        </ul>
+        {% endif %}
+
+        <div class="dash-nav-section-title">Raccourcis Publics</div>
+        <ul class="dash-nav-list">
+          <li>
+            <a href="{% url 'home' %}" target="_blank" class="dash-nav-link">
+              <span class="dash-icon">🌐</span>
+              <span>Voir le Site Public ↗</span>
+            </a>
+          </li>
+          <li>
+            <a href="{% url 'films:list' %}" target="_blank" class="dash-nav-link">
+              <span class="dash-icon">🎞️</span>
+              <span>Voir Catalogue Public ↗</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Logout Form -->
+      <div class="dash-footer">
+        <form action="{% url 'accounts:logout' %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="dash-logout-btn">
+            <span>🚪 Déconnexion</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="dashboard-main">
+      <!-- Topbar -->
+      <header class="dashboard-topbar">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <button type="button" class="dash-menu-btn" id="dashMenuToggle" aria-label="Toggle Menu">
+            ☰
+          </button>
+          <div class="dash-topbar-breadcrumb">
+            {% block breadcrumb %}Tableau de bord{% endblock %}
+          </div>
+        </div>
+
+        <div class="dash-topbar-actions">
+          {% if can_add or user.is_superuser %}
+          <a href="{% url 'dashboard:movie_add' %}" class="btn-topbar-primary">
+            <span>➕ Nouveau Film</span>
+          </a>
+          {% endif %}
+          <div class="dash-logged-pill">
+            <span>Connecté : <strong>{{ user.username }}</strong></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Alert messages -->
+      {% if messages %}
+      <div class="dash-messages-container">
+        {% for message in messages %}
+          <div class="alert-item {% if message.tags %}alert-{{ message.tags }}{% else %}alert-success{% endif %}">
+            <span>{{ message }}</span>
+            <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; font-size:1.1rem; cursor:pointer;">✕</button>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Page Body -->
+      <main class="dashboard-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const menuBtn = document.getElementById('dashMenuToggle');
+    const sidebar = document.getElementById('dashboardSidebar');
+    if (menuBtn && sidebar) {
+      menuBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
+    }
+  </script>
+</body>
+</html>

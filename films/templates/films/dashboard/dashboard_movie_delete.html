@@ -1,0 +1,54 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Supprimer {{ film.title }} | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:movie_list' %}" style="color:var(--color-green-primary);">Films</a> &nbsp;›&nbsp; 
+<strong>Supprimer</strong>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 2rem auto;">
+  <div class="dash-section-card" style="border: 2px solid #fecaca; text-align: center; padding: 2.5rem;">
+    <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+    <h1 style="color: #dc2626; font-size: 1.75rem; margin-bottom: 0.5rem; font-family: var(--font-heading);">
+      Confirmer la suppression
+    </h1>
+    <p style="color: var(--color-text-muted); font-size: 1.05rem; margin-bottom: 2rem;">
+      Êtes-vous absolument sûr de vouloir supprimer définitivement le film suivant du catalogue ?
+    </p>
+
+    <div style="background: #fdf2f2; border: 1px solid #fee2e2; border-radius: var(--radius-md); padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2rem; text-align: left;">
+      {% if film.thumb %}
+      <img src="{{ film.thumb.url }}" alt="{{ film.title }}" style="width: 75px; height: 110px; object-fit: cover; border-radius: 6px; box-shadow: var(--shadow-sm);">
+      {% else %}
+      <div style="width: 75px; height: 110px; background: #111e0c; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #fff;">🎬</div>
+      {% endif %}
+      <div>
+        <div style="font-size: 1.25rem; font-weight: 800; color: #1f2937;">{{ film.title }}</div>
+        <div style="margin-top: 0.35rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <span class="meta-chip format">{{ film.format_type|default:"2D" }}</span>
+          <span class="meta-chip">{{ film.genre|default:"Cinéma" }}</span>
+        </div>
+        <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.5rem;">
+          Ajouté le {{ film.date|date:"d/m/Y" }} par <strong>{{ film.author.username|default:"Jordan" }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <form action="{% url 'dashboard:movie_delete' slug=film.slug %}" method="POST">
+      {% csrf_token %}
+      <div style="display: flex; justify-content: center; gap: 1rem;">
+        <a href="{% url 'dashboard:movie_list' %}" class="btn-dash-ghost" style="padding: 0.85rem 1.75rem;">
+          Annuler et Retourner
+        </a>
+        <button type="submit" class="btn-dash-danger" style="padding: 0.85rem 2rem;">
+          🗑️ Oui, Supprimer ce Film
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

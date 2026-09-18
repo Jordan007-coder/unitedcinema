@@ -1,0 +1,533 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Programmation de la Semaine | United Cinema{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="form-page-hero">
+  <div class="container">
+    <div class="form-hero-inner">
+      <div>
+        <h1 class="form-hero-title">
+          <span>📅 Programme Officiel de la <span class="gold-accent">Semaine</span></span>
+        </h1>
+        <p class="form-hero-subtitle">
+          Publiez la nouvelle affiche hebdomadaire, ajustez les tarifs et modifiez les dates en quelques clics sans toucher au code.
+        </p>
+      </div>
+
+      <div class="form-hero-actions">
+        <a href="/#schedule-row" class="btn-hero-ghost">
+          <span>← Voir sur le site</span>
+        </a>
+        {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+        <a href="{% url 'dashboard:home' %}" class="btn-hero-ghost" style="background: rgba(226, 165, 0, 0.25); border-color: var(--color-gold-primary);">
+          <span>📊 Dashboard Admin</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Content Area -->
+<section class="form-content-wrap">
+  <div class="container">
+    <div class="film-form-grid">
+
+      <!-- LEFT: Schedule Form -->
+      <div class="film-form-card">
+        <form id="scheduleForm" action="{% url 'films:schedule_update' %}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          {% if form.errors %}
+          <div class="alert-item alert-error">
+            <div>
+              <strong>Veuillez corriger les erreurs ci-dessous :</strong>
+              <ul style="margin-top: 0.5rem; margin-left: 1.25rem;">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }} : {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Section 1 : Dates & Titre -->
+          <div class="form-section-title">
+            <span>🗓️ 1. Période & Titre du Programme</span>
+          </div>
+
+          <!-- Titre -->
+          <div class="form-group">
+            <label class="form-label" for="id_schedule_title">
+              <span class="form-label-text">
+                <strong>Titre du programme</strong>
+                <span class="form-label-required">*</span>
+              </span>
+              <span class="form-label-hint">Affiché en titre de section</span>
+            </label>
+            {{ form.title }}
+          </div>
+
+          <!-- Dates début et fin -->
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="id_start_date">
+                <span class="form-label-text">Date de début</span>
+              </label>
+              {{ form.start_date }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="id_end_date">
+                <span class="form-label-text">Date de fin</span>
+              </label>
+              {{ form.end_date }}
+            </div>
+          </div>
+
+          <!-- Quick Date Range Pills -->
+          <div class="quick-tags-container" style="margin-top: -0.5rem; margin-bottom: 1.5rem;">
+            <button type="button" class="tag-pill tag-pill-gold" id="btnDateThisWeek">Cette semaine</button>
+            <button type="button" class="tag-pill tag-pill-gold" id="btnDateNextWeek">Semaine prochaine</button>
+            <button type="button" class="tag-pill tag-pill-gold" id="btnDate7Days">+7 jours</button>
+          </div>
+
+          <!-- Section 2 : Affiche officielle (Poster HD) -->
+          <div class="form-section-title" style="margin-top: 1.5rem;">
+            <span>🖼️ 2. Affiche Officielle du Programme (HD)</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="form-label-text">Fichier affiche (JPG, PNG, WEBP)</span>
+              <span class="form-label-hint">Résolution recommandée : 1200x1600 px ou supérieure</span>
+            </label>
+
+            {% if schedule and schedule.poster %}
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; padding: 0.85rem; background: #f0f7ec; border-radius: 8px; border: 1px solid rgba(27, 129, 0, 0.2);">
+              <img src="{{ schedule.poster.url }}" alt="Affiche actuelle" style="width: 55px; height: 75px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+              <div>
+                <div style="font-weight: 700; color: var(--color-green-dark); font-size: 0.9rem;">Affiche actuellement publiée</div>
+                <div style="font-size: 0.8rem; color: var(--color-text-muted);">Sélectionnez ou glissez un nouveau fichier ci-dessous pour la remplacer.</div>
+              </div>
+            </div>
+            {% endif %}
+
+            <div class="upload-dropzone" id="posterDropzone">
+              {{ form.poster }}
+              <span class="upload-icon">📁</span>
+              <div class="upload-main-text">Glissez la nouvelle affiche ici, ou <span style="text-decoration:underline; color:var(--color-green-primary);">parcourez vos fichiers</span></div>
+              <div class="upload-sub-text">Fichier haute définition pour zoom plein écran</div>
+            </div>
+
+            <!-- Selected Poster Strip -->
+            <div class="poster-preview-strip" id="posterPreviewStrip" style="display: none;">
+              <img id="posterStripImg" src="" alt="Miniature" class="poster-preview-thumb">
+              <div class="poster-preview-info">
+                <div class="poster-filename" id="posterFilename">affiche.jpg</div>
+                <div class="poster-filesize" id="posterFilesize">0 Ko</div>
+              </div>
+              <button type="button" class="btn-remove-poster" id="btnRemovePoster">Supprimer</button>
+            </div>
+          </div>
+
+          <!-- Section 3 : Grille des Tarifs (Pricing Pills) -->
+          <div class="form-section-title" style="margin-top: 2rem;">
+            <span>🏷️ 3. Tarifs Officiels de la Semaine</span>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="id_price_standard">
+                <span class="form-label-text">Séance Classique</span>
+              </label>
+              {{ form.price_standard }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="id_price_under_12">
+                <span class="form-label-text">Moins de 12 ans</span>
+              </label>
+              {{ form.price_under_12 }}
+            </div>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="id_price_glasses_3d">
+                <span class="form-label-text">Lunettes 3D</span>
+              </label>
+              {{ form.price_glasses_3d }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="id_price_premiere">
+                <span class="form-label-text">Première</span>
+              </label>
+              {{ form.price_premiere }}
+            </div>
+          </div>
+
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label class="form-label" for="id_price_avant_premiere">
+                <span class="form-label-text">Avant-Première</span>
+              </label>
+              {{ form.price_avant_premiere }}
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: flex-end;">
+              <button type="button" class="btn-hero-ghost" id="btnResetPrices" style="width: 100%; height: 46px; font-size: 0.82rem; background: #fdfaf2; border-color: var(--color-gold-primary); color: var(--color-gold-dark);">
+                <span>⚡ Rétablir tarifs habituels</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 4 : Mentions & Bandeau Navette -->
+          <div class="form-section-title" style="margin-top: 2rem;">
+            <span>📢 4. Mentions & Bandeau Navette</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="id_schedule_subtitle">
+              <span class="form-label-text">Sous-titre descriptif</span>
+            </label>
+            {{ form.subtitle }}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="id_schedule_notice">
+              <span class="form-label-text">Bandeau d'information supérieur (Navette, événements)</span>
+            </label>
+            {{ form.notice }}
+          </div>
+
+          <!-- Active toggle -->
+          <div class="form-group" style="margin-top: 1rem; padding: 1rem; background: #f2fbf0; border-radius: var(--radius-sm); border: 1.5px solid #a7d396;">
+            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+              {{ form.is_active }}
+              <div>
+                <strong style="color: var(--color-green-dark); font-size: 0.95rem;">Activer immédiatement ce programme sur le site public</strong>
+                <div style="font-size: 0.8rem; color: var(--color-text-muted);">Ce programme remplacera automatiquement le précédent sur la page d'accueil.</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Submit Bar -->
+          <div class="form-actions-bar" style="margin-top: 2rem;">
+            <a href="/#schedule-row" class="btn-demo-quickfill">
+              <span>Annuler</span>
+            </a>
+
+            <button type="submit" class="btn-submit-main">
+              <span>✨ Enregistrer et Publier le Programme</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT: Live Preview Mockup -->
+      <div class="preview-column-sticky">
+        <div class="preview-card-outer">
+          <div class="preview-header-meta">
+            <span class="preview-badge-live">
+              <span class="pulsing-dot"></span>
+              Rendu en direct sur le site
+            </span>
+            <span class="preview-hint-text">Aperçu interactif</span>
+          </div>
+
+          <div style="text-align: center; margin-bottom: 1rem;">
+            <span class="section-tag gold" style="display: inline-block; margin-bottom: 0.35rem; font-size: 0.75rem;">Programmation Officielle</span>
+            <h3 id="liveTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--color-text-main); margin-bottom: 0.25rem;">
+              {{ schedule.title|default:"Programme de la Semaine" }}
+            </h3>
+            <p id="liveSubtitle" style="font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.4;">
+              {{ schedule.subtitle|default:"Consultez l'affiche officielle des séances, horaires et tarifs de la semaine en cours." }}
+            </p>
+          </div>
+
+          <!-- Live Frame Mockup -->
+          <div class="schedule-mounted-frame" id="liveFramePreview" title="Cliquez pour agrandir le programme" style="margin-bottom: 1.25rem; cursor: pointer;">
+            {% if schedule and schedule.poster %}
+              <img id="liveScheduleImg" src="{{ schedule.poster.url }}" alt="Affiche du programme" class="schedule-img">
+            {% else %}
+              <img id="liveScheduleImg" src="{% static 'schedule_week.png' %}" alt="Affiche du programme" class="schedule-img">
+            {% endif %}
+            <div class="schedule-overlay-hint">
+              <span class="schedule-overlay-btn" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">
+                🔍 Cliquez pour agrandir
+              </span>
+            </div>
+          </div>
+
+          <!-- Live Pricing Badges -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div class="info-pill" style="display: flex; justify-content: space-between; padding: 0.6rem 0.9rem;">
+              <span style="font-size: 0.82rem;">Séance Classique :</span>
+              <strong class="price-tag" id="livePriceStandard">{{ schedule.price_standard|default:"3 000 XAF" }}</strong>
+            </div>
+            <div class="info-pill" style="display: flex; justify-content: space-between; padding: 0.6rem 0.9rem;">
+              <span style="font-size: 0.82rem;">Moins de 12 ans :</span>
+              <strong class="price-tag" id="livePriceUnder12">{{ schedule.price_under_12|default:"1 500 XAF" }}</strong>
+            </div>
+            <div class="info-pill" style="display: flex; justify-content: space-between; padding: 0.6rem 0.9rem;">
+              <span style="font-size: 0.82rem;">Lunettes 3D :</span>
+              <strong class="price-tag" id="livePriceGlasses3D">{{ schedule.price_glasses_3d|default:"1 500 XAF" }}</strong>
+            </div>
+            <div class="info-pill" style="display: flex; justify-content: space-between; padding: 0.6rem 0.9rem;">
+              <span style="font-size: 0.82rem;">Première :</span>
+              <strong class="price-tag" id="livePricePremiere">{{ schedule.price_premiere|default:"5 000 XAF" }}</strong>
+            </div>
+            <div class="info-pill" style="display: flex; justify-content: space-between; padding: 0.6rem 0.9rem;">
+              <span style="font-size: 0.82rem;">Avant-Première :</span>
+              <strong class="price-tag" id="livePriceAvantPremiere">{{ schedule.price_avant_premiere|default:"5 000 XAF" }}</strong>
+            </div>
+          </div>
+
+          <!-- Live Top Notice Preview -->
+          <div style="margin-top: 1.25rem; padding: 0.75rem; background: #111e0c; color: #fff; border-radius: 6px; font-size: 0.78rem; text-align: center;">
+            <div style="color: var(--color-gold-primary); font-weight: 700; margin-bottom: 2px;">Bandeau d'information supérieur :</div>
+            <span id="liveNotice">{{ schedule.notice|default:"🎬 Navette gratuite Ahala ↔ Mbankomo pour toutes les séances à partir de 18h00 !" }}</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Lightbox Modal for Zoom Testing -->
+<div class="lightbox-modal" id="scheduleLightbox" role="dialog" aria-modal="true" aria-label="Agrandissement du programme de la semaine">
+  <div class="lightbox-content">
+    <button class="lightbox-close-btn" aria-label="Fermer">✕</button>
+    {% if schedule and schedule.poster %}
+      <img id="modalImg" src="{{ schedule.poster.url }}" alt="Programme Agrandi" class="lightbox-img">
+    {% else %}
+      <img id="modalImg" src="{% static 'schedule_week.png' %}" alt="Programme Agrandi" class="lightbox-img">
+    {% endif %}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.getElementById('id_schedule_title');
+  const startDateInput = document.getElementById('id_start_date');
+  const endDateInput = document.getElementById('id_end_date');
+  const posterInput = document.getElementById('id_schedule_poster');
+  const subtitleInput = document.getElementById('id_schedule_subtitle');
+  const noticeInput = document.getElementById('id_schedule_notice');
+  const dropzone = document.getElementById('posterDropzone');
+
+  const priceStandard = document.getElementById('id_price_standard');
+  const priceUnder12 = document.getElementById('id_price_under_12');
+  const priceGlasses3D = document.getElementById('id_price_glasses_3d');
+  const pricePremiere = document.getElementById('id_price_premiere');
+  const priceAvantPremiere = document.getElementById('id_price_avant_premiere');
+
+  // Preview elements
+  const liveTitle = document.getElementById('liveTitle');
+  const liveSubtitle = document.getElementById('liveSubtitle');
+  const liveNotice = document.getElementById('liveNotice');
+  const liveScheduleImg = document.getElementById('liveScheduleImg');
+  const modalImg = document.getElementById('modalImg');
+
+  const livePriceStandard = document.getElementById('livePriceStandard');
+  const livePriceUnder12 = document.getElementById('livePriceUnder12');
+  const livePriceGlasses3D = document.getElementById('livePriceGlasses3D');
+  const livePricePremiere = document.getElementById('livePricePremiere');
+  const livePriceAvantPremiere = document.getElementById('livePriceAvantPremiere');
+
+  const posterPreviewStrip = document.getElementById('posterPreviewStrip');
+  const posterStripImg = document.getElementById('posterStripImg');
+  const posterFilename = document.getElementById('posterFilename');
+  const posterFilesize = document.getElementById('posterFilesize');
+  const btnRemovePoster = document.getElementById('btnRemovePoster');
+
+  const FRENCH_MONTHS_JS = [
+    '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+
+  function formatFrenchDayMonth(dateObj) {
+    return dateObj.getDate() + ' ' + FRENCH_MONTHS_JS[dateObj.getMonth() + 1];
+  }
+
+  // Live text updates
+  if (titleInput) {
+    titleInput.addEventListener('input', () => {
+      liveTitle.textContent = titleInput.value.trim() || 'Programme de la Semaine';
+    });
+  }
+  if (subtitleInput) {
+    subtitleInput.addEventListener('input', () => {
+      liveSubtitle.textContent = subtitleInput.value.trim() || "Consultez l'affiche officielle des séances, horaires et tarifs de la semaine en cours.";
+    });
+  }
+  if (noticeInput) {
+    noticeInput.addEventListener('input', () => {
+      liveNotice.textContent = noticeInput.value.trim() || '🎬 Navette gratuite Ahala ↔ Mbankomo pour toutes les séances à partir de 18h00 !';
+    });
+  }
+
+  // Live price updates
+  if (priceStandard) priceStandard.addEventListener('input', () => livePriceStandard.textContent = priceStandard.value);
+  if (priceUnder12) priceUnder12.addEventListener('input', () => livePriceUnder12.textContent = priceUnder12.value);
+  if (priceGlasses3D) priceGlasses3D.addEventListener('input', () => livePriceGlasses3D.textContent = priceGlasses3D.value);
+  if (pricePremiere) pricePremiere.addEventListener('input', () => livePricePremiere.textContent = pricePremiere.value);
+  if (priceAvantPremiere) priceAvantPremiere.addEventListener('input', () => livePriceAvantPremiere.textContent = priceAvantPremiere.value);
+
+  // Quick reset prices
+  const btnResetPrices = document.getElementById('btnResetPrices');
+  if (btnResetPrices) {
+    btnResetPrices.addEventListener('click', () => {
+      priceStandard.value = '3 000 XAF';
+      priceUnder12.value = '1 500 XAF';
+      priceGlasses3D.value = '1 500 XAF';
+      pricePremiere.value = '5 000 XAF';
+      priceAvantPremiere.value = '5 000 XAF';
+
+      livePriceStandard.textContent = '3 000 XAF';
+      livePriceUnder12.textContent = '1 500 XAF';
+      livePriceGlasses3D.textContent = '1 500 XAF';
+      livePricePremiere.textContent = '5 000 XAF';
+      livePriceAvantPremiere.textContent = '5 000 XAF';
+    });
+  }
+
+  // Quick date helper buttons
+  function setDateRange(start, end) {
+    const toYMD = d => {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    };
+
+    startDateInput.value = toYMD(start);
+    endDateInput.value = toYMD(end);
+
+    const generatedTitle = `Programme de la Semaine du ${start.getDate()} au ${formatFrenchDayMonth(end)} ${end.getFullYear()}`;
+    titleInput.value = generatedTitle;
+    liveTitle.textContent = generatedTitle;
+  }
+
+  const btnDateThisWeek = document.getElementById('btnDateThisWeek');
+  if (btnDateThisWeek) {
+    btnDateThisWeek.addEventListener('click', () => {
+      const today = new Date();
+      const end = new Date(today);
+      end.setDate(today.getDate() + 6);
+      setDateRange(today, end);
+    });
+  }
+
+  const btnDateNextWeek = document.getElementById('btnDateNextWeek');
+  if (btnDateNextWeek) {
+    btnDateNextWeek.addEventListener('click', () => {
+      const start = new Date();
+      start.setDate(start.getDate() + 7);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      setDateRange(start, end);
+    });
+  }
+
+  const btnDate7Days = document.getElementById('btnDate7Days');
+  if (btnDate7Days) {
+    btnDate7Days.addEventListener('click', () => {
+      let start = startDateInput.value ? new Date(startDateInput.value) : new Date();
+      const end = new Date(start);
+      end.setDate(start.getDate() + 7);
+      setDateRange(start, end);
+    });
+  }
+
+  // Poster dropzone & preview
+  function handlePosterFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert("Veuillez sélectionner un fichier image valide (JPG, PNG, WebP).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      posterStripImg.src = dataUrl;
+      posterFilename.textContent = file.name;
+      posterFilesize.textContent = (file.size / 1024).toFixed(1) + ' Ko';
+      posterPreviewStrip.style.display = 'flex';
+
+      liveScheduleImg.src = dataUrl;
+      if (modalImg) modalImg.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (posterInput) {
+    posterInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) handlePosterFile(this.files[0]);
+    });
+  }
+
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(name => {
+      dropzone.addEventListener(name, e => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropzone.addEventListener(name, e => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+    dropzone.addEventListener('drop', e => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        posterInput.files = e.dataTransfer.files;
+        handlePosterFile(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  if (btnRemovePoster) {
+    btnRemovePoster.addEventListener('click', () => {
+      posterInput.value = '';
+      posterPreviewStrip.style.display = 'none';
+    });
+  }
+
+  // Lightbox modal testing in form
+  const liveFramePreview = document.getElementById('liveFramePreview');
+  const lightbox = document.getElementById('scheduleLightbox');
+  const closeBtn = document.querySelector('.lightbox-close-btn');
+
+  if (liveFramePreview && lightbox) {
+    liveFramePreview.addEventListener('click', () => {
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+  }
+  if (closeBtn && lightbox) {
+    closeBtn.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+    });
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

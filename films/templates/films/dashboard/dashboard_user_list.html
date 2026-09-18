@@ -1,0 +1,103 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Utilisateurs & Rôles | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<strong>Utilisateurs & Tâches</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">👥 Utilisateurs & Tâches Spécifiques</h1>
+    <p class="dash-subtitle">Gérez les comptes autorisés et attribuez les tâches via des permissions dédiées.</p>
+  </div>
+
+  <div>
+    <a href="{% url 'dashboard:user_create' %}" class="btn-dash-primary">
+      <span>➕ Créer un Utilisateur</span>
+    </a>
+  </div>
+</div>
+
+<div class="dash-section-card">
+  <div class="table-responsive">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Utilisateur</th>
+          <th>Rôle Principal</th>
+          <th>Tâches Assignées (Droits)</th>
+          <th>Date de création</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in users_data %}
+        <tr>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: #eafbe7; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--color-green-primary);">
+                {% if item.user.is_superuser %}👑{% else %}{{ item.user.username|slice:":1"|upper }}{% endif %}
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--color-text-main); font-size: 1rem;">
+                  {{ item.user.username }}
+                  {% if item.user == request.user %}
+                    <span style="font-size: 0.75rem; background: #eafbe7; color: var(--color-green-dark); padding: 0.15rem 0.5rem; border-radius: 9999px; margin-left: 0.35rem;">Vous</span>
+                  {% endif %}
+                </div>
+                <div style="font-size: 0.8rem; color: var(--color-text-muted);">{{ item.user.email|default:"Aucun email" }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if item.user.is_superuser %}
+              <span class="user-role-badge superuser">👑 Super Admin</span>
+            {% elif item.user.is_staff %}
+              <span class="user-role-badge staff">🛡️ Staff / Modérateur</span>
+            {% else %}
+              <span class="user-role-badge public">Spectateur</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+              {% if item.user.is_superuser %}
+                <span class="task-badge all">✨ Accès Total (Toutes les tâches)</span>
+              {% else %}
+                {% if item.has_add %}
+                  <span class="task-badge add">➕ Ajouter des films</span>
+                {% endif %}
+                {% if item.has_change %}
+                  <span class="task-badge edit">✏️ Modifier des films</span>
+                {% endif %}
+                {% if item.has_delete %}
+                  <span class="task-badge delete">🗑️ Supprimer des films</span>
+                {% endif %}
+                {% if not item.has_add and not item.has_change and not item.has_delete %}
+                  <span style="font-size: 0.8rem; color: var(--color-text-muted);">Aucune tâche d'édition</span>
+                {% endif %}
+              {% endif %}
+            </div>
+          </td>
+          <td style="font-size: 0.85rem; color: var(--color-text-muted);">
+            {{ item.user.date_joined|date:"d/m/Y" }}
+          </td>
+          <td style="text-align: right;">
+            {% if item.user != request.user and not item.user.is_superuser %}
+              <a href="{% url 'dashboard:user_delete' user_id=item.user.id %}" class="action-btn delete" title="Supprimer cet utilisateur">
+                🗑️ Supprimer
+              </a>
+            {% else %}
+              <span style="font-size: 0.8rem; color: #9ca3af;">Protégé</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Vue d'ensemble | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<span>Accueil</span> &nbsp;›&nbsp; <strong>Vue d'ensemble</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">Bonjour, {{ user.username }} 👋</h1>
+    <p class="dash-subtitle">Bienvenue sur le tableau de bord d'administration de United Cinema Mbankomo.</p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{% url 'dashboard:schedule_update' %}" class="btn-dash-primary" style="background: linear-gradient(135deg, #0a5c44 0%, #063d2e 100%); border: 1px solid var(--color-gold-primary);">
+      <span>📅 Programme de la Semaine</span>
+    </a>
+    {% if can_add or is_superuser %}
+    <a href="{% url 'dashboard:movie_add' %}" class="btn-dash-primary">
+      <span>➕ Ajouter un Film</span>
+    </a>
+    {% endif %}
+    {% if is_superuser %}
+    <a href="{% url 'dashboard:user_create' %}" class="btn-dash-gold">
+      <span>👥 Créer un Utilisateur</span>
+    </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick Stats Cards -->
+<div class="dash-stats-grid">
+  <div class="dash-stat-card">
+    <div class="dash-stat-icon-wrap green">🎬</div>
+    <div class="dash-stat-body">
+      <div class="dash-stat-num">{{ total_movies }}</div>
+      <div class="dash-stat-label">Films au Catalogue</div>
+    </div>
+    <a href="{% url 'dashboard:movie_list' %}" class="dash-stat-link">Gérer les films →</a>
+  </div>
+
+  <div class="dash-stat-card">
+    <div class="dash-stat-icon-wrap gold">📅</div>
+    <div class="dash-stat-body">
+      <div class="dash-stat-num" style="font-size: 1.25rem;">
+        {% if active_schedule %}En ligne{% else %}Standard{% endif %}
+      </div>
+      <div class="dash-stat-label">Programme Semaine</div>
+    </div>
+    <a href="{% url 'dashboard:schedule_update' %}" class="dash-stat-link" style="color: var(--color-gold-primary);">Modifier le programme →</a>
+  </div>
+
+  {% if is_superuser %}
+  <div class="dash-stat-card">
+    <div class="dash-stat-icon-wrap gold">👥</div>
+    <div class="dash-stat-body">
+      <div class="dash-stat-num">{{ total_users }}</div>
+      <div class="dash-stat-label">Comptes Utilisateurs</div>
+    </div>
+    <a href="{% url 'dashboard:user_list' %}" class="dash-stat-link">Gérer les accès →</a>
+  </div>
+  {% endif %}
+
+  <div class="dash-stat-card">
+    <div class="dash-stat-icon-wrap blue">🛡️</div>
+    <div class="dash-stat-body">
+      <div class="dash-stat-num">
+        {% if is_superuser %}Tous droits{% else %}Restreint{% endif %}
+      </div>
+      <div class="dash-stat-label">Vos permissions actuelles</div>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+      {% if is_superuser %}Super Administrateur{% else %}
+        {% if can_add %}• Ajout {% endif %}
+        {% if can_change %}• Modification {% endif %}
+        {% if can_delete %}• Suppression {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Movies Table Section -->
+<div class="dash-section-card">
+  <div class="dash-section-header">
+    <div>
+      <h2 class="dash-section-title">Films récemment enregistrés</h2>
+      <p class="dash-section-subtitle">Derniers films ajoutés au catalogue du cinéma</p>
+    </div>
+    <a href="{% url 'dashboard:movie_list' %}" class="btn-dash-ghost">Voir tous les films ({{ total_movies }})</a>
+  </div>
+
+  {% if recent_movies %}
+  <div class="table-responsive">
+    <table class="dash-table">
+      <thead>
+        <tr>
+          <th>Affiche</th>
+          <th>Titre du film</th>
+          <th>Format</th>
+          <th>Genre</th>
+          <th>Date de sortie</th>
+          <th>Auteur</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movie in recent_movies %}
+        <tr>
+          <td style="width: 60px;">
+            {% if movie.thumb %}
+              <img src="{{ movie.thumb.url }}" alt="{{ movie.title }}" class="dash-table-thumb">
+            {% else %}
+              <div class="dash-table-thumb-placeholder">🎬</div>
+            {% endif %}
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--color-green-primary); font-size: 1rem;">{{ movie.title }}</div>
+            <div style="font-size: 0.78rem; color: var(--color-text-muted);">Slug : <code>{{ movie.slug }}</code></div>
+          </td>
+          <td>
+            <span class="meta-chip format" style="font-size: 0.78rem; padding: 0.2rem 0.6rem;">{{ movie.format_type|default:"2D" }}</span>
+          </td>
+          <td>{{ movie.genre|default:"Cinéma" }}</td>
+          <td>{{ movie.date_out|default:"Programmé" }}</td>
+          <td>
+            <span style="font-size: 0.82rem; font-weight: 600;">{{ movie.author.username|default:"Jordan" }}</span>
+          </td>
+          <td style="text-align: right;">
+            <div class="dash-actions-row">
+              <a href="{% url 'films:details' slug=movie.slug %}" target="_blank" class="action-btn view" title="Voir la fiche publique">👁️</a>
+              {% if can_change or is_superuser %}
+              <a href="{% url 'dashboard:movie_edit' slug=movie.slug %}" class="action-btn edit" title="Modifier ce film">✏️</a>
+              {% endif %}
+              {% if can_delete or is_superuser %}
+              <a href="{% url 'dashboard:movie_delete' slug=movie.slug %}" class="action-btn delete" title="Supprimer ce film">🗑️</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 3rem; color: var(--color-text-muted);">
+    Aucun film pour le moment.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

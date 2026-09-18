@@ -1,0 +1,740 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Ajouter un nouveau film | United Cinema{% endblock %}
+
+{% block content %}
+<!-- Page Hero -->
+<section class="form-page-hero">
+  <div class="container">
+    <div class="form-hero-inner">
+      <div>
+        <h1 class="form-hero-title">
+          <span>🎬 Ajouter un <span class="gold-accent">Nouveau Film</span></span>
+        </h1>
+        <p class="form-hero-subtitle">
+          Remplissez les détails ci-dessous pour publier un nouveau film au catalogue United Cinema. L'aperçu à droite se met à jour en temps réel !
+        </p>
+      </div>
+
+      <div class="form-hero-actions">
+        <a href="{% url 'dashboard:movie_list' %}" class="btn-hero-ghost" style="background: rgba(226, 165, 0, 0.25); border-color: var(--color-gold-primary);">
+          <span>📊 Tableau de bord</span>
+        </a>
+        <button type="button" class="btn-hero-ghost" id="btnAutofillDemo" title="Remplir automatiquement des données de démonstration">
+          <span>⚡ Remplir un exemple</span>
+        </button>
+        <a href="{% url 'films:list' %}" class="btn-hero-ghost">
+          <span>← Voir le catalogue</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Content Area -->
+<section class="form-content-wrap">
+  <div class="container">
+    <div class="film-form-grid">
+
+      <!-- LEFT: The Creation Form -->
+      <div class="film-form-card">
+        <form id="createMovieForm" action="{% url 'films:create' %}" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          {% if form.errors %}
+          <div class="alert-item alert-error">
+            <div>
+              <strong>Veuillez corriger les erreurs ci-dessous :</strong>
+              <ul style="margin-top: 0.5rem; margin-left: 1.25rem;">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }} : {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Section 1 : Programmation & Statut -->
+          <div class="form-section-title">
+            <span>🎯 1. Statut de Programmation</span>
+          </div>
+
+          <div class="status-selection-grid">
+            <!-- Option 1: Now Showing -->
+            <label class="status-option-card card-showing active-showing" id="statusCardShowing">
+              <input type="radio" name="status" value="now_showing" id="statusRadioShowing" checked>
+              <div class="status-card-header">
+                <span class="status-card-icon">🎬</span>
+                <div>
+                  <div class="status-card-title">Actuellement en salle</div>
+                  <span class="status-badge-chip green">À l'affiche</span>
+                </div>
+              </div>
+              <p class="status-card-desc">
+                Le film passe actuellement au cinéma. Il s'alignera immédiatement avec les autres films dans la section <strong>« Actuellement au Cinéma »</strong> de l'accueil.
+              </p>
+            </label>
+
+            <!-- Option 2: Upcoming -->
+            <label class="status-option-card card-upcoming" id="statusCardUpcoming">
+              <input type="radio" name="status" value="upcoming" id="statusRadioUpcoming">
+              <div class="status-card-header">
+                <span class="status-card-icon">⏳</span>
+                <div>
+                  <div class="status-card-title">Prochainement</div>
+                  <span class="status-badge-chip gold">Sortie future</span>
+                </div>
+              </div>
+              <p class="status-card-desc">
+                Sortie future. Notre programme analysera la date pour <strong>positionner automatiquement le film chronologiquement</strong> sous son mois de sortie.
+              </p>
+            </label>
+          </div>
+
+          <!-- Dedicated Upcoming Release Date Box -->
+          <div class="upcoming-date-box" id="upcomingDateBox" style="display: none;">
+            <div class="upcoming-date-box-header">
+              <label class="form-label" for="id_release_date" style="margin-bottom: 0;">
+                <span class="form-label-text">
+                  <strong>🗓️ Date officielle de sortie</strong>
+                  <span class="form-label-required">*</span>
+                </span>
+                <span class="form-label-hint">Analyse chronologique automatique</span>
+              </label>
+              <span class="status-badge-chip gold" id="upcomingDatePreviewTag">Automatique</span>
+            </div>
+            {{ form.release_date }}
+            <!-- Quick Date Incrementors -->
+            <div class="quick-tags-container" id="upcomingDateChips" style="margin-top: 0.65rem;">
+              <button type="button" class="tag-pill tag-pill-gold" data-days="7">+1 Semaine</button>
+              <button type="button" class="tag-pill tag-pill-gold" data-days="14">+2 Semaines</button>
+              <button type="button" class="tag-pill tag-pill-gold" data-days="30">+1 Mois</button>
+              <button type="button" class="tag-pill tag-pill-gold" data-days="60">+2 Mois</button>
+            </div>
+            <div class="upcoming-date-notice">
+              <span>💡</span>
+              <span><strong>Classement intelligent :</strong> United Cinema organise automatiquement les films par ordre chronologique croissant et les regroupe par mois (Septembre 2026, Octobre 2026, etc.).</span>
+            </div>
+          </div>
+
+          <!-- Section 2 : Informations Principales -->
+          <div class="form-section-title">
+            <span>📌 2. Informations du Film</span>
+          </div>
+
+          <!-- Titre -->
+          <div class="form-group">
+            <label class="form-label" for="id_title">
+              <span class="form-label-text">
+                <strong>Titre officiel du film</strong>
+                <span class="form-label-required">*</span>
+              </span>
+              <span class="form-label-hint">Nom qui sera affiché partout</span>
+            </label>
+            {{ form.title }}
+          </div>
+
+          <!-- Slug & Date Row -->
+          <div class="form-row-2col">
+            <!-- Slug -->
+            <div class="form-group">
+              <label class="form-label" for="id_slug">
+                <span class="form-label-text">Identifiant URL (Slug)</span>
+                <span class="form-label-hint" id="slugLockStatus">🔒 Auto</span>
+              </label>
+              {{ form.slug }}
+              <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.35rem;">
+                URL finale : <code>/films/<span id="slugPreviewText">mon-film</span>/</code>
+              </div>
+            </div>
+
+            <!-- Date de sortie / Durée -->
+            <div class="form-group">
+              <label class="form-label" for="id_date_out">
+                <span class="form-label-text" id="labelDateOut">Horaires / Séances / Durée</span>
+              </label>
+              {{ form.date_out }}
+              <!-- Quick Date Chips -->
+              <div class="quick-tags-container" id="dateQuickChips">
+                <button type="button" class="tag-pill tag-pill-gold" data-fill="À l'affiche • 2h 15min">2h 15min</button>
+                <button type="button" class="tag-pill tag-pill-gold" data-fill="À l'affiche • 1h 45min">1h 45min</button>
+                <button type="button" class="tag-pill tag-pill-gold" data-fill="Sortie Nationale">Sortie Nationale</button>
+                <button type="button" class="tag-pill tag-pill-gold" data-fill="Prochainement">Prochainement</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2 : Genre & Format -->
+          <div class="form-section-title" style="margin-top: 2rem;">
+            <span>🏷️ 2. Classification & Projection</span>
+          </div>
+
+          <div class="form-row-2col">
+            <!-- Genre -->
+            <div class="form-group">
+              <label class="form-label" for="id_genre">
+                <span class="form-label-text">Genre(s)</span>
+                <span class="form-label-hint">Cliquez pour ajouter</span>
+              </label>
+              {{ form.genre }}
+              <!-- Quick Genre Pills -->
+              <div class="quick-tags-container" id="genreQuickChips">
+                <button type="button" class="tag-pill" data-genre="Action">Action</button>
+                <button type="button" class="tag-pill" data-genre="Animation">Animation</button>
+                <button type="button" class="tag-pill" data-genre="Aventure">Aventure</button>
+                <button type="button" class="tag-pill" data-genre="Comédie">Comédie</button>
+                <button type="button" class="tag-pill" data-genre="Drame">Drame</button>
+                <button type="button" class="tag-pill" data-genre="Horreur">Horreur</button>
+                <button type="button" class="tag-pill" data-genre="Sci-Fi">Sci-Fi</button>
+                <button type="button" class="tag-pill" data-genre="Famille">Famille</button>
+                <button type="button" class="tag-pill" data-genre="Thriller">Thriller</button>
+              </div>
+            </div>
+
+            <!-- Format -->
+            <div class="form-group">
+              <label class="form-label" for="id_format_type">
+                <span class="form-label-text">Format & Technologie</span>
+                <span class="form-label-hint">Salle DOLBY / 3D</span>
+              </label>
+              {{ form.format_type }}
+              <!-- Quick Format Pills -->
+              <div class="quick-tags-container" id="formatQuickChips">
+                <button type="button" class="tag-pill" data-format="3D / 2D DOLBY">3D / 2D DOLBY</button>
+                <button type="button" class="tag-pill" data-format="2D DOLBY DIGITAL">2D DOLBY</button>
+                <button type="button" class="tag-pill" data-format="2D DOLBY ATMOS">DOLBY ATMOS</button>
+                <button type="button" class="tag-pill" data-format="2D NUMÉRIQUE">2D NUMÉRIQUE</button>
+                <button type="button" class="tag-pill" data-format="REMASTERISÉ 4K">4K REMASTER</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3 : Affiche (Upload) -->
+          <div class="form-section-title" style="margin-top: 2rem;">
+            <span>🖼️ 3. Affiche Officielle</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="form-label-text">Affiche du film (Poster)</span>
+              <span class="form-label-hint">JPG, PNG, WEBP (Max 15 Mo)</span>
+            </label>
+
+            <div class="upload-dropzone" id="posterDropzone">
+              {{ form.thumb }}
+              <span class="upload-icon">📁</span>
+              <div class="upload-main-text">Glissez-déposez l'affiche ici, ou <span style="text-decoration:underline; color:var(--color-green-primary);">parcourez vos fichiers</span></div>
+              <div class="upload-sub-text">Format portrait recommandé (ex: 600x900 px ou 1200x1600 px)</div>
+            </div>
+
+            <!-- Selected Poster Strip -->
+            <div class="poster-preview-strip" id="posterPreviewStrip" style="display: none;">
+              <img id="posterStripImg" src="" alt="Miniature" class="poster-preview-thumb">
+              <div class="poster-preview-info">
+                <div class="poster-filename" id="posterFilename">image.jpg</div>
+                <div class="poster-filesize" id="posterFilesize">0 Ko</div>
+              </div>
+              <button type="button" class="btn-remove-poster" id="btnRemovePoster">Supprimer</button>
+            </div>
+          </div>
+
+          <!-- Section 4 : Synopsis -->
+          <div class="form-section-title" style="margin-top: 2rem;">
+            <span>📝 4. Résumé & Synopsis</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="id_synopsis">
+              <span class="form-label-text">Histoire & Synopsis</span>
+              <span class="form-label-hint">Accroche pour les spectateurs</span>
+            </label>
+            {{ form.synopsis }}
+            <div class="char-count-wrap">
+              <span id="synopsisCharCount">0</span>&nbsp;caractères
+            </div>
+          </div>
+
+          <!-- Submit Bar -->
+          <div class="form-actions-bar">
+            <button type="button" class="btn-demo-quickfill" id="btnQuickReset">
+              <span>🔄 Réinitialiser le formulaire</span>
+            </button>
+
+            <button type="submit" class="btn-submit-main" id="btnSubmitFilm">
+              <span>✨ Enregistrer et Publier le Film</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT: Real-time Live Preview Card -->
+      <div class="preview-column-sticky">
+        <div class="preview-card-outer">
+          <div class="preview-header-meta">
+            <span class="preview-badge-live">
+              <span class="pulsing-dot"></span>
+              Aperçu en direct
+            </span>
+            <span class="preview-hint-text">Rendu sur le site</span>
+          </div>
+
+          <!-- Movie Card Mockup (Matches Home Page Cards) -->
+          <article class="movie-card preview-movie-card">
+            <div class="movie-poster-wrap preview-poster-box">
+              <img id="liveCardPoster" src="" alt="Affiche" class="preview-poster-img" style="display: none;">
+              <div id="liveCardPlaceholder" class="preview-poster-placeholder">
+                <svg viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+                <span style="font-size: 0.9rem; font-weight: 600;">Affiche du Film</span>
+                <span style="font-size: 0.75rem; opacity: 0.8;">Glissez une image pour prévisualiser</span>
+              </div>
+              <span class="poster-badge-top-left" id="liveCardBadgeTopLeft">À l'affiche</span>
+              <span class="poster-badge-top-right rating-tp" id="liveCardRatingBadge">TP</span>
+              <div class="poster-release-banner" id="liveCardReleaseBanner" style="display: none;">
+                <span id="liveCardReleaseBannerText">🗓️ Prochainement</span>
+              </div>
+            </div>
+
+            <div class="preview-body">
+              <h3 class="preview-title" id="liveCardTitle">Titre du Film</h3>
+
+              <div class="preview-meta-chips">
+                <span class="meta-chip duration" id="liveCardDate">⏱ À l'affiche</span>
+                <span class="meta-chip format" id="liveCardFormat">2D NUMÉRIQUE</span>
+              </div>
+
+              <div class="preview-genre" id="liveCardGenre">Cinéma / Action</div>
+
+              <p class="preview-synopsis" id="liveCardSynopsis">
+                Le synopsis rédigé dans le formulaire s'affichera ici en direct avec une mise en page identique à celle des spectateurs.
+              </p>
+
+              <div class="movie-actions" style="margin-top: 1rem;">
+                <button type="button" class="btn-book-ticket" id="liveCardBtnBooking" style="pointer-events: none; opacity: 0.9;">
+                  <span>Voir séances</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+                </button>
+                <span class="meta-chip" id="liveCardUpcomingBadge" style="display: none; font-weight:700; color:var(--color-gold-dark); background:rgba(226,165,0,0.15);">
+                  Sortie le <span id="liveCardUpcomingDateText">Prochainement</span>
+                </span>
+              </div>
+            </div>
+          </article>
+
+          <!-- Tips Card -->
+          <div style="margin-top: 1.5rem; background: #fbfdf9; border-radius: var(--radius-sm); padding: 1rem; border: 1px dashed rgba(27, 129, 0, 0.2); font-size: 0.85rem; color: var(--color-text-muted);">
+            <div style="font-weight: 700; color: var(--color-green-primary); margin-bottom: 0.35rem;">💡 Astuce United Cinema</div>
+            Vous pouvez cliquer directement sur les tags de genre ou de format pour pré-remplir instantanément les champs.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.getElementById('id_title');
+  const slugInput = document.getElementById('id_slug');
+  const dateInput = document.getElementById('id_date_out');
+  const genreInput = document.getElementById('id_genre');
+  const formatInput = document.getElementById('id_format_type');
+  const synopsisInput = document.getElementById('id_synopsis');
+  const thumbInput = document.getElementById('id_thumb');
+  const dropzone = document.getElementById('posterDropzone');
+
+  // Preview elements
+  const liveCardTitle = document.getElementById('liveCardTitle');
+  const liveCardDate = document.getElementById('liveCardDate');
+  const liveCardFormat = document.getElementById('liveCardFormat');
+  const liveCardGenre = document.getElementById('liveCardGenre');
+  const liveCardSynopsis = document.getElementById('liveCardSynopsis');
+  const liveCardPoster = document.getElementById('liveCardPoster');
+  const liveCardPlaceholder = document.getElementById('liveCardPlaceholder');
+  const slugPreviewText = document.getElementById('slugPreviewText');
+  const synopsisCharCount = document.getElementById('synopsisCharCount');
+
+  // Thumbnail strip elements
+  const posterPreviewStrip = document.getElementById('posterPreviewStrip');
+  const posterStripImg = document.getElementById('posterStripImg');
+  const posterFilename = document.getElementById('posterFilename');
+  const posterFilesize = document.getElementById('posterFilesize');
+  const btnRemovePoster = document.getElementById('btnRemovePoster');
+
+  // Slug generator helper
+  function generateSlug(text) {
+    return text
+      .toString()
+      .toLowerCase()
+      .trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+      .replace(/[^a-z0-9 -]/g, '') // remove non-alphanumeric except space & hyphen
+      .replace(/\s+/g, '-') // spaces to hyphens
+      .replace(/-+/g, '-'); // multiple hyphens to single
+  }
+
+  let slugManual = false;
+  if (slugInput && slugInput.value.trim() !== '') {
+    slugManual = true;
+  }
+
+  // 1. Live Title & Auto-slug
+  if (titleInput) {
+    titleInput.addEventListener('input', function() {
+      const val = this.value.trim();
+      liveCardTitle.textContent = val || 'Titre du Film';
+
+      if (!slugManual && slugInput) {
+        const generated = generateSlug(val);
+        slugInput.value = generated;
+        slugPreviewText.textContent = generated || 'mon-film';
+      }
+    });
+  }
+
+  if (slugInput) {
+    slugInput.addEventListener('input', function() {
+      slugManual = this.value.trim().length > 0;
+      slugPreviewText.textContent = this.value.trim() || 'mon-film';
+      document.getElementById('slugLockStatus').textContent = slugManual ? '✏️ Manuel' : '🔒 Auto';
+    });
+  }
+
+    // Status & Release Date elements
+  const statusRadioShowing = document.getElementById('statusRadioShowing');
+  const statusRadioUpcoming = document.getElementById('statusRadioUpcoming');
+  const statusCardShowing = document.getElementById('statusCardShowing');
+  const statusCardUpcoming = document.getElementById('statusCardUpcoming');
+  const upcomingDateBox = document.getElementById('upcomingDateBox');
+  const releaseDateInput = document.getElementById('id_release_date');
+  const upcomingDatePreviewTag = document.getElementById('upcomingDatePreviewTag');
+  const labelDateOut = document.getElementById('labelDateOut');
+
+  // Preview elements for status & date
+  const liveCardBadgeTopLeft = document.getElementById('liveCardBadgeTopLeft');
+  const liveCardReleaseBanner = document.getElementById('liveCardReleaseBanner');
+  const liveCardReleaseBannerText = document.getElementById('liveCardReleaseBannerText');
+  const liveCardBtnBooking = document.getElementById('liveCardBtnBooking');
+  const liveCardUpcomingBadge = document.getElementById('liveCardUpcomingBadge');
+  const liveCardUpcomingDateText = document.getElementById('liveCardUpcomingDateText');
+
+  const FRENCH_MONTHS_JS = [
+    '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+  ];
+
+  function formatFrenchDate(isoDateStr) {
+    if (!isoDateStr) return '';
+    const parts = isoDateStr.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[2], 10);
+      const mIdx = parseInt(parts[1], 10);
+      const year = parts[0];
+      const monthName = FRENCH_MONTHS_JS[mIdx] || '';
+      return `${day} ${monthName} ${year}`;
+    }
+    return isoDateStr;
+  }
+
+  function formatMonthYear(isoDateStr) {
+    if (!isoDateStr) return 'Automatique';
+    const parts = isoDateStr.split('-');
+    if (parts.length >= 2) {
+      const mIdx = parseInt(parts[1], 10);
+      const year = parts[0];
+      const monthName = (FRENCH_MONTHS_JS[mIdx] || '').charAt(0).toUpperCase() + (FRENCH_MONTHS_JS[mIdx] || '').slice(1);
+      return `${monthName} ${year}`;
+    }
+    return 'Automatique';
+  }
+
+  function updateStatusUI(status) {
+    if (status === 'upcoming') {
+      if (statusCardUpcoming) statusCardUpcoming.classList.add('active-upcoming');
+      if (statusCardShowing) statusCardShowing.classList.remove('active-showing');
+      if (upcomingDateBox) upcomingDateBox.style.display = 'block';
+      if (labelDateOut) labelDateOut.textContent = 'Durée / Mention (ex: 2h 15min ou Sortie Nationale)';
+
+      // Preview updates
+      if (liveCardBadgeTopLeft) {
+        liveCardBadgeTopLeft.textContent = 'Sortie';
+        liveCardBadgeTopLeft.style.background = 'var(--color-gold-primary)';
+        liveCardBadgeTopLeft.style.color = '#000';
+      }
+      if (liveCardReleaseBanner) liveCardReleaseBanner.style.display = 'block';
+      if (liveCardBtnBooking) liveCardBtnBooking.style.display = 'none';
+      if (liveCardUpcomingBadge) liveCardUpcomingBadge.style.display = 'inline-block';
+
+      updateReleaseDatePreview();
+    } else {
+      if (statusCardShowing) statusCardShowing.classList.add('active-showing');
+      if (statusCardUpcoming) statusCardUpcoming.classList.remove('active-upcoming');
+      if (upcomingDateBox) upcomingDateBox.style.display = 'none';
+      if (labelDateOut) labelDateOut.textContent = 'Horaires / Séances / Durée';
+
+      // Preview updates
+      if (liveCardBadgeTopLeft) {
+        liveCardBadgeTopLeft.textContent = "À l'affiche";
+        liveCardBadgeTopLeft.style.background = '';
+        liveCardBadgeTopLeft.style.color = '';
+      }
+      if (liveCardReleaseBanner) liveCardReleaseBanner.style.display = 'none';
+      if (liveCardBtnBooking) liveCardBtnBooking.style.display = 'inline-flex';
+      if (liveCardUpcomingBadge) liveCardUpcomingBadge.style.display = 'none';
+      if (liveCardDate) liveCardDate.textContent = '⏱ ' + (dateInput && dateInput.value.trim() ? dateInput.value.trim() : "À l'affiche");
+    }
+  }
+
+  function updateReleaseDatePreview() {
+    if (!releaseDateInput) return;
+    const val = releaseDateInput.value;
+    if (val) {
+      const frenchDate = formatFrenchDate(val);
+      const monthYear = formatMonthYear(val);
+      if (upcomingDatePreviewTag) upcomingDatePreviewTag.textContent = 'Mois : ' + monthYear;
+      if (liveCardReleaseBannerText) liveCardReleaseBannerText.textContent = '🗓️ ' + frenchDate;
+      if (liveCardUpcomingDateText) liveCardUpcomingDateText.textContent = frenchDate;
+      if (liveCardDate) liveCardDate.textContent = '🗓️ ' + frenchDate;
+      if (dateInput && (!dateInput.value || dateInput.value.startsWith('Sortie le '))) {
+        dateInput.value = 'Sortie le ' + frenchDate;
+      }
+    } else {
+      if (upcomingDatePreviewTag) upcomingDatePreviewTag.textContent = 'Automatique';
+      if (liveCardReleaseBannerText) liveCardReleaseBannerText.textContent = '🗓️ Prochainement';
+      if (liveCardUpcomingDateText) liveCardUpcomingDateText.textContent = 'Prochainement';
+    }
+  }
+
+  if (statusRadioShowing) {
+    statusRadioShowing.addEventListener('change', function() {
+      if (this.checked) updateStatusUI('now_showing');
+    });
+  }
+  if (statusRadioUpcoming) {
+    statusRadioUpcoming.addEventListener('change', function() {
+      if (this.checked) updateStatusUI('upcoming');
+    });
+  }
+
+  if (releaseDateInput) {
+    releaseDateInput.addEventListener('input', updateReleaseDatePreview);
+    releaseDateInput.addEventListener('change', updateReleaseDatePreview);
+  }
+
+  // Quick date increment buttons
+  document.querySelectorAll('#upcomingDateChips button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const days = parseInt(this.getAttribute('data-days'), 10) || 7;
+      const target = new Date();
+      target.setDate(target.getDate() + days);
+      const yyyy = target.getFullYear();
+      const mm = String(target.getMonth() + 1).padStart(2, '0');
+      const dd = String(target.getDate()).padStart(2, '0');
+      if (releaseDateInput) {
+        releaseDateInput.value = `${yyyy}-${mm}-${dd}`;
+        updateReleaseDatePreview();
+      }
+    });
+  });
+
+  // 2. Date quick pills & live update
+  if (dateInput) {
+    dateInput.addEventListener('input', function() {
+      liveCardDate.textContent = '📅 ' + (this.value.trim() || 'Prochainement');
+    });
+
+    document.querySelectorAll('#dateQuickChips button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const val = this.getAttribute('data-fill');
+        dateInput.value = val;
+        liveCardDate.textContent = '📅 ' + val;
+      });
+    });
+  }
+
+  // 3. Genre quick pills & live update
+  if (genreInput) {
+    genreInput.addEventListener('input', function() {
+      liveCardGenre.textContent = this.value.trim() || 'Cinéma';
+    });
+
+    document.querySelectorAll('#genreQuickChips button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const selected = this.getAttribute('data-genre');
+        let current = genreInput.value.trim();
+        if (!current) {
+          genreInput.value = selected;
+        } else if (!current.includes(selected)) {
+          genreInput.value = current + ' / ' + selected;
+        }
+        liveCardGenre.textContent = genreInput.value;
+        this.classList.add('active');
+        setTimeout(() => this.classList.remove('active'), 600);
+      });
+    });
+  }
+
+  // 4. Format quick pills & live update
+  if (formatInput) {
+    formatInput.addEventListener('input', function() {
+      liveCardFormat.textContent = this.value.trim() || '2D NUMÉRIQUE';
+    });
+
+    document.querySelectorAll('#formatQuickChips button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const selected = this.getAttribute('data-format');
+        formatInput.value = selected;
+        liveCardFormat.textContent = selected;
+        this.classList.add('active');
+        setTimeout(() => this.classList.remove('active'), 600);
+      });
+    });
+  }
+
+  // 5. Synopsis live preview & char count
+  if (synopsisInput) {
+    synopsisInput.addEventListener('input', function() {
+      const len = this.value.length;
+      synopsisCharCount.textContent = len;
+      liveCardSynopsis.textContent = this.value.trim() || "Le synopsis rédigé dans le formulaire s'affichera ici en direct avec une mise en page identique à celle des spectateurs.";
+    });
+  }
+
+  // 6. Poster upload, Drag & Drop & live thumbnail
+  function handlePosterFile(file) {
+    if (!file || !file.type.startsWith('image/')) {
+      alert("Veuillez sélectionner un fichier image valide (JPG, PNG, WebP).");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      // Update strip
+      posterStripImg.src = dataUrl;
+      posterFilename.textContent = file.name;
+      posterFilesize.textContent = (file.size / 1024).toFixed(1) + ' Ko';
+      posterPreviewStrip.style.display = 'flex';
+
+      // Update card preview
+      liveCardPoster.src = dataUrl;
+      liveCardPoster.style.display = 'block';
+      liveCardPlaceholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (thumbInput) {
+    thumbInput.addEventListener('change', function() {
+      if (this.files && this.files[0]) {
+        handlePosterFile(this.files[0]);
+      }
+    });
+  }
+
+  // Drag and drop events
+  if (dropzone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+        thumbInput.files = e.dataTransfer.files;
+        handlePosterFile(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  // Remove poster button
+  if (btnRemovePoster) {
+    btnRemovePoster.addEventListener('click', function() {
+      thumbInput.value = '';
+      posterPreviewStrip.style.display = 'none';
+      liveCardPoster.style.display = 'none';
+      liveCardPoster.src = '';
+      liveCardPlaceholder.style.display = 'flex';
+    });
+  }
+
+  // 7. Demo Fill Button (1-Click sample test)
+  const btnAutofillDemo = document.getElementById('btnAutofillDemo');
+  if (btnAutofillDemo) {
+    btnAutofillDemo.addEventListener('click', function() {
+      const demoMovie = {
+        title: "Avatar : Le Porteur d'Ombres",
+        date: "25 Septembre 2026",
+        genre: "Action / Aventure / Science-Fiction",
+        format: "3D / 2D DOLBY ATMOS",
+        synopsis: "Dans les profondeurs inexplorées des océans et des cieux de Pandora, une nouvelle tribu Na'vi gardienne des flammes ancestrales émerge des volcans sous-marins. Jake Sully et Neytiri doivent sceller une alliance périlleuse face au retour d'une expédition militaire lourdement armée."
+      };
+
+      titleInput.value = demoMovie.title;
+      dateInput.value = demoMovie.date;
+      genreInput.value = demoMovie.genre;
+      formatInput.value = demoMovie.format;
+      synopsisInput.value = demoMovie.synopsis;
+
+      const slug = generateSlug(demoMovie.title);
+      slugInput.value = slug;
+      slugPreviewText.textContent = slug;
+
+      // Trigger preview updates
+      liveCardTitle.textContent = demoMovie.title;
+      liveCardDate.textContent = '📅 ' + demoMovie.date;
+      liveCardGenre.textContent = demoMovie.genre;
+      liveCardFormat.textContent = demoMovie.format;
+      liveCardSynopsis.textContent = demoMovie.synopsis;
+      synopsisCharCount.textContent = demoMovie.synopsis.length;
+
+      // Animate card
+      const previewOuter = document.querySelector('.preview-card-outer');
+      previewOuter.style.transition = 'transform 0.25s ease';
+      previewOuter.style.transform = 'scale(1.02)';
+      setTimeout(() => previewOuter.style.transform = 'scale(1)', 300);
+    });
+  }
+
+  // Reset Button
+  const btnQuickReset = document.getElementById('btnQuickReset');
+  if (btnQuickReset) {
+    btnQuickReset.addEventListener('click', function() {
+      if (confirm('Voulez-vous vraiment effacer tous les champs du formulaire ?')) {
+        document.getElementById('createMovieForm').reset();
+        slugManual = false;
+        if (statusRadioShowing) statusRadioShowing.checked = true;
+        updateStatusUI('now_showing');
+        liveCardTitle.textContent = 'Titre du Film';
+        liveCardDate.textContent = '⏱ À l\'affiche';
+        liveCardFormat.textContent = '2D NUMÉRIQUE';
+        liveCardGenre.textContent = 'Cinéma / Action';
+        liveCardSynopsis.textContent = "Le synopsis rédigé dans le formulaire s'affichera ici en direct avec une mise en page identique à celle des spectateurs.";
+        slugPreviewText.textContent = 'mon-film';
+        synopsisCharCount.textContent = '0';
+        btnRemovePoster.click();
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
