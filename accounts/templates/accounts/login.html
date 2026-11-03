@@ -1,0 +1,74 @@
+{% extends 'base_layout.html' %}
+{% load static %}
+
+{% block title %}Connexion Administration | United Cinema{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 1.5rem 6rem 1.5rem; background: #f8faf7; min-height: 75vh; display: flex; align-items: center; justify-content: center;">
+  <div style="width: 100%; max-width: 480px;">
+    
+    <div class="film-form-card" style="box-shadow: 0 16px 40px rgba(27, 129, 0, 0.12); padding: 2.5rem 2rem;">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <img src="{% static 'logo.jpg' %}" alt="Logo United Cinema" style="width: 70px; height: 70px; border-radius: 50%; margin: 0 auto 1rem auto; box-shadow: var(--shadow-sm);">
+        <h1 style="font-family: var(--font-heading); font-size: 1.75rem; color: var(--color-green-primary); margin-bottom: 0.35rem;">
+          Espace Administration
+        </h1>
+        <p style="color: var(--color-text-muted); font-size: 0.92rem;">
+          Connectez-vous pour accéder au tableau de bord United Cinema
+        </p>
+      </div>
+
+      {% if form.errors %}
+      <div class="alert-item alert-error" style="margin-bottom: 1.5rem;">
+        <span>Nom d'utilisateur ou mot de passe incorrect.</span>
+      </div>
+      {% endif %}
+
+      <form action="{% url 'accounts:login' %}" method="POST">
+        {% csrf_token %}
+        {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label" for="id_username">
+            <span class="form-label-text">Nom d'utilisateur</span>
+          </label>
+          <input 
+            type="text" 
+            name="username" 
+            id="id_username" 
+            class="form-control" 
+            placeholder="ex: Jordan" 
+            required
+            autofocus
+          >
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.75rem;">
+          <label class="form-label" for="id_password">
+            <span class="form-label-text">Mot de passe</span>
+          </label>
+          <input 
+            type="password" 
+            name="password" 
+            id="id_password" 
+            class="form-control" 
+            placeholder="••••••••••••" 
+            required
+          >
+        </div>
+
+        <button type="submit" class="btn-submit-main" style="width: 100%; padding: 0.9rem; font-size: 1.05rem;">
+          <span>🔐 Se Connecter au Dashboard</span>
+        </button>
+      </form>
+
+      <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid #eef3eb; text-align: center; font-size: 0.82rem; color: var(--color-text-muted);">
+        Compte superadministrateur configuré : <strong>Jordan</strong>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

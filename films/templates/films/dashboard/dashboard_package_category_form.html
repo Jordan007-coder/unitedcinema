@@ -1,0 +1,251 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}
+{% if action == 'create' %}Créer une Catégorie{% else %}Modifier : {{ category.name }}{% endif %} | Dashboard United Cinema
+{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_list' %}" style="color:var(--color-green-primary);">Packages</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_category_list' %}" style="color:var(--color-green-primary);">Catégories</a> &nbsp;›&nbsp; 
+<strong>{% if action == 'create' %}Nouvelle Catégorie{% else %}Modifier : {{ category.name }}{% endif %}</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">
+      {% if action == 'create' %}📂 Créer une Catégorie de Packages{% else %}✏️ Modifier la Catégorie : {{ category.name }}{% endif %}
+    </h1>
+    <p class="dash-subtitle">
+      Configurez le titre de la section, son affiche/flyer officiel et les paramètres d'affichage.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    {% if action == 'edit' %}
+    <a href="{% url 'dashboard:package_list' %}?category={{ category.id }}" class="btn-dash-ghost" style="color: var(--color-green-primary); font-weight: 700;">
+      <span>🎁 Voir ses packages ({{ category.packages.count }})</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'dashboard:package_category_list' %}" class="btn-dash-ghost">
+      <span>← Retour aux Catégories</span>
+    </a>
+  </div>
+</div>
+
+<div class="film-form-grid" style="display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1.2fr); gap: 1.5rem; align-items: start;">
+  <!-- Form Card (Left) -->
+  <div class="film-form-card dash-section-card" style="padding: 2rem;">
+    <form action="{% if action == 'create' %}{% url 'dashboard:package_category_add' %}{% else %}{% url 'dashboard:package_category_edit' category_id=category.id %}{% endif %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert-item alert-error" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+        <div>
+          <strong>Veuillez corriger les erreurs suivantes :</strong>
+          <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}</strong> : {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Section 1 : Informations Générales -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📌 1. Informations de la Catégorie</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" for="id_cat_name">
+          <span class="form-label-text"><strong>Nom de la Catégorie</strong> <span style="color:#dc2626;">*</span></span>
+        </label>
+        {{ form.name }}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_cat_slug">
+            <span class="form-label-text">Identifiant URL (Slug)</span>
+          </label>
+          {{ form.slug }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            Laisser vide pour générer automatiquement.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_cat_badge">
+            <span class="form-label-text">Badge / Étiquette d'en-tête</span>
+          </label>
+          {{ form.badge }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            ex: Divertissement & Sensations, 🏨 Hôtel 4 Étoiles
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" for="id_cat_subtitle">
+          <span class="form-label-text">Sous-titre / Phrase d'accroche</span>
+        </label>
+        {{ form.subtitle }}
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_cat_notice">
+          <span class="form-label-text">Bandeau d'information / Remarque de section</span>
+        </label>
+        {{ form.notice }}
+      </div>
+
+      <!-- Section 2 : Affiche / Grand Flyer Officiel -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>🖼️ 2. Affiche / Grand Flyer Officiel</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" for="id_cat_flyer_title">
+          <span class="form-label-text">Titre du cadre affiche</span>
+        </label>
+        {{ form.flyer_title }}
+        <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+          ex: Flyer Packages Loisirs, Flyer Beauté à Prix Doux, Flyer Week-end Détente
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem; position: relative; z-index: 1;">
+        <label class="form-label" for="id_cat_flyer_image" style="cursor: pointer;">
+          <span class="form-label-text"><strong>Affiche Officielle (Grand format)</strong></span>
+        </label>
+
+        <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; background: #fbfdfa; border: 1.5px dashed #cbd5e1; border-radius: var(--radius-md); padding: 1.25rem;">
+          <!-- Flyer Preview Box -->
+          <div id="cat-preview-box" style="width: 130px; height: 160px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+            {% if category.flyer_image %}
+              <img id="cat-preview-img" src="{{ category.flyer_image.url }}" alt="{{ category.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+              <div id="cat-placeholder-elem" style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 0.5rem;">
+                <div style="font-size: 2rem; line-height: 1.2;">🖼️</div>
+                <span>Flyer par défaut</span>
+              </div>
+              <img id="cat-preview-img" src="" alt="Aperçu" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            {% endif %}
+          </div>
+
+          <!-- File Input & Instructions -->
+          <div style="flex: 1; min-width: 240px;">
+            {{ form.flyer_image }}
+            <div style="font-size: 0.82rem; color: var(--color-text-muted); margin-top: 0.5rem; line-height: 1.45;">
+              JPG, PNG ou WEBP en haute résolution recommandé.<br>
+              Cette affiche sera affichée en grand sur la page publique avec zoom interactif et bouton de téléchargement.<br>
+              {% if category.flyer_image %}
+                <span style="color: #047857; font-weight: 700;">✓ Affiche actuelle :</span> <a href="{{ category.flyer_image.url }}" target="_blank" style="color: var(--color-green-primary); text-decoration: underline;">Voir le flyer</a>
+              {% endif %}
+              <div style="margin-top: 0.5rem; font-size: 0.78rem; color: #64748b; background: #f1f5f9; padding: 0.4rem 0.65rem; border-radius: 4px;">
+                💡 <em>Rappel :</em> Chaque package individuel possède également son propre champ d'image (accessible dans <a href="{% url 'dashboard:package_list' %}" style="color: var(--color-green-primary); text-decoration: underline;">Tous les Packages</a>).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3 : Disposition & Paramètres -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚙️ 3. Disposition & Paramètres</span>
+        </h3>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_cat_layout_type">
+            <span class="form-label-text">Disposition des cartes</span>
+          </label>
+          {{ form.layout_type }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_cat_order">
+            <span class="form-label-text">Ordre d'affichage</span>
+          </label>
+          {{ form.order }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            0 = en premier sur le site.
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #fdfbf7; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem;">
+        <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #1f2937;">
+          {{ form.is_active }}
+          <span>🟢 Catégorie visible immédiatement sur le site public</span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 1rem; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+        <button type="submit" class="btn-dash-primary" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+          💾 {% if action == 'create' %}Créer la Catégorie{% else %}Enregistrer les modifications{% endif %}
+        </button>
+        <a href="{% url 'dashboard:package_category_list' %}" class="btn-dash-ghost" style="padding: 0.85rem 1.5rem;">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Helpful Guide (Right) -->
+  <div class="dash-section-card" style="padding: 1.5rem; background: #fafafa; position: sticky; top: 1.5rem;">
+    <h3 style="font-size: 1.05rem; color: #1f2937; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>💡 Rôle d'une Catégorie</span>
+    </h3>
+    <p style="font-size: 0.85rem; color: #4b5563; line-height: 1.5; margin-bottom: 1rem;">
+      Une catégorie regroupe plusieurs formules complémentaires (ex : <em>Spa & Bien-être</em> regroupe <em>Pack I</em>, <em>Pack II</em>, <em>Pack III</em> ; <em>Week-end Détente</em> regroupe <em>Single</em>, <em>Couple</em>, <em>Famille 3</em>...).
+    </p>
+
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+      <h4 style="font-size: 0.9rem; color: var(--color-green-primary); margin-bottom: 0.5rem;">
+        🖼️ Affiche Officielle :
+      </h4>
+      <p style="font-size: 0.82rem; color: #6b7280; line-height: 1.5;">
+        L'affiche de la catégorie est le grand flyer officiel affiché en vedette sur le côté de la section. Les packages individuels à l'intérieur peuvent avoir leur propre petite photo ou hériter du flyer.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Live Preview Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const flyerInput = document.getElementById('id_cat_flyer_image');
+  const previewImg = document.getElementById('cat-preview-img');
+  const placeholder = document.getElementById('cat-placeholder-elem');
+
+  if (flyerInput && previewImg) {
+    flyerInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          previewImg.src = evt.target.result;
+          previewImg.style.display = 'block';
+          if (placeholder) placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,427 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Packages | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; <strong>Gestion des Packages</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">🎁 Gestion des Packages & Offres Spéciales</h1>
+    <p class="dash-subtitle">Créez, modifiez ou supprimez les packages Loisirs, Spa et Détente affichés sur le site.</p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{% url 'dashboard:package_category_list' %}" class="btn-dash-primary" style="background: linear-gradient(135deg, #0a5c44 0%, #063d2e 100%); border: 1px solid var(--color-gold-primary);">
+      <span>📂 Gérer les Catégories</span>
+    </a>
+    {% if can_add or is_superuser %}
+    <a href="{% url 'dashboard:package_category_add' %}" class="btn-dash-ghost" style="border-color: #059669; color: #059669; font-weight: 700;">
+      <span>➕ Nouvelle Catégorie</span>
+    </a>
+    <a href="{% url 'dashboard:package_add' %}" class="btn-dash-primary">
+      <span>➕ Créer un Package</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'packages' %}" target="_blank" class="btn-dash-ghost" style="border-color: var(--color-gold-primary); color: #b8860b; font-weight: 700;">
+      <span>👁️ Page publique ↗</span>
+    </a>
+  </div>
+</div>
+
+<!-- Dynamic Category Quick-Filter Navigation Strip -->
+<div class="dash-section-card" style="margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-md);">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+      <span style="font-weight: 700; font-size: 0.9rem; color: #475569;">Filtrer par Catégorie :</span>
+      <a href="{% url 'dashboard:package_list' %}" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.2s; {% if not selected_category %}background: var(--color-green-primary); color: #ffffff;{% else %}background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;{% endif %}">
+        <span>Tous les Packages</span>
+        <span style="opacity: 0.85; font-size: 0.75rem;">({{ total_packages }})</span>
+      </a>
+      {% for cat in categories %}
+      <a href="{% url 'dashboard:package_list' %}?category={{ cat.id }}" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: all 0.2s; {% if selected_category == cat.id|stringformat:'s' or selected_category == cat.slug %}background: var(--color-green-primary); color: #ffffff;{% else %}background: #f8fafc; color: #334155; border: 1px solid #e2e8f0;{% endif %}">
+        <span>{{ cat.name }}</span>
+        <span style="background: rgba(0,0,0,0.08); padding: 0.1rem 0.4rem; border-radius: 999px; font-size: 0.72rem;">{{ cat.packages.count }}</span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div>
+      <a href="{% url 'dashboard:package_category_list' %}" style="font-size: 0.82rem; color: var(--color-green-primary); font-weight: 700; text-decoration: underline;">
+        ⚙️ Configurer l'affiche & ordre des catégories →
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="dash-filters-bar">
+  <form method="GET" action="{% url 'dashboard:package_list' %}" class="dash-search-form" style="display: flex; gap: 0.75rem; flex-wrap: wrap; flex: 1;">
+    <input 
+      type="text" 
+      name="q" 
+      value="{{ query }}" 
+      placeholder="Rechercher par nom, sous-titre ou badge..." 
+      class="dash-search-input"
+      style="min-width: 250px;"
+    >
+    <select name="category" class="dash-search-input" style="max-width: 280px; cursor: pointer;" onchange="this.form.submit()">
+      <option value="">-- Toutes les catégories --</option>
+      {% for cat in categories %}
+      <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:'s' or selected_category == cat.slug %}selected{% endif %}>{{ cat.name }} ({{ cat.packages.count }})</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-dash-search">🔍 Filtrer</button>
+    {% if query or selected_category %}
+      <a href="{% url 'dashboard:package_list' %}" class="btn-dash-reset">Effacer les filtres</a>
+    {% endif %}
+  </form>
+
+  <div style="font-weight: 600; color: var(--color-green-primary); font-size: 0.95rem; white-space: nowrap;">
+    {{ packages|length }} package{{ packages|length|pluralize }} répertorié{{ packages|length|pluralize }} ({{ active_count }} actif{{ active_count|pluralize }})
+  </div>
+</div>
+
+<!-- Packages Table -->
+<div class="dash-section-card">
+  <!-- Reorder Feedback Toast Notification -->
+  <div id="reorder-toast" style="display: none; position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; background: #064e3b; color: #ffffff; padding: 0.9rem 1.4rem; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); font-weight: 600; font-size: 0.92rem; align-items: center; gap: 0.65rem; transition: all 0.3s ease;">
+    <span id="reorder-toast-icon" style="font-size: 1.25rem;">✅</span>
+    <span id="reorder-toast-msg">Ordre d'affichage enregistré avec succès !</span>
+  </div>
+
+  <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; font-size: 0.85rem; color: #475569;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-size: 1.1rem;">⠿</span>
+      <span><strong>Classement des Packages :</strong> Utilisez le bouton <strong>⠿ Glisser-Déposer</strong> ou les flèches ▲ / ▼ pour réordonner vos packages en temps réel.</span>
+    </div>
+    <span id="reorder-status-indicator" style="font-size: 0.8rem; color: #059669; font-weight: 700; display: none;">
+      ● Sauvegarde automatique active
+    </span>
+  </div>
+
+  {% if packages %}
+  <div class="table-responsive">
+    <table class="dash-table" id="packages-sortable-table">
+      <thead>
+        <tr>
+          <th style="width: 85px; text-align: center;">Déplacer</th>
+          <th style="width: 70px; text-align: center;">Visuel</th>
+          <th>Nom & Identifiant</th>
+          <th>Catégorie</th>
+          <th>Tarif</th>
+          <th>Badge & Mise en avant</th>
+          <th>Navette</th>
+          <th>Prestations</th>
+          <th>Statut</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="packages-table-body">
+        {% for pkg in packages %}
+        <tr class="sortable-pkg-row" draggable="true" data-package-id="{{ pkg.id }}" style="cursor: default; transition: background 0.15s ease;">
+          <td style="text-align: center; vertical-align: middle;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+              <button type="button" class="btn-drag-handle" title="Maintenir et glisser pour réordonner" style="cursor: grab; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; width: 28px; height: 28px; font-size: 1.1rem; color: #475569; display: inline-flex; align-items: center; justify-content: center; user-select: none; line-height: 1;">
+                <span style="letter-spacing: -2px; font-weight: 900;">⠿</span>
+              </button>
+              <span class="row-order-badge" style="font-weight: 800; font-size: 0.88rem; color: var(--color-green-primary); min-width: 20px;">
+                {{ pkg.order }}
+              </span>
+            </div>
+            <div style="display: flex; justify-content: center; gap: 0.2rem; margin-top: 0.2rem;">
+              <button type="button" class="btn-arrow-move btn-move-up" data-dir="up" title="Monter" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; font-size: 0.72rem; padding: 0 3px;">▲</button>
+              <button type="button" class="btn-arrow-move btn-move-down" data-dir="down" title="Descendre" style="border: none; background: transparent; cursor: pointer; color: #94a3b8; font-size: 0.72rem; padding: 0 3px;">▼</button>
+            </div>
+          </td>
+          <td style="text-align: center; vertical-align: middle;">
+            <div style="width: 58px; height: 46px; border-radius: 6px; overflow: hidden; background: #f3f4f6; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1; margin: 0 auto; position: relative;" title="{% if pkg.image %}Photo spécifique du package{% elif pkg.category and pkg.category.get_flyer_url %}Affiche issue de {{ pkg.category.name }}{% endif %}">
+              {% if pkg.get_image_url %}
+                <img src="{{ pkg.get_image_url }}" alt="{{ pkg.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span style="position: absolute; bottom: 1px; right: 2px; font-size: 0.6rem; background: rgba(5,150,105,0.9); color:#fff; border-radius: 3px; padding: 0 3px;" title="Photo personnalisée propre au package">📸</span>
+              {% elif pkg.category and pkg.category.get_flyer_url %}
+                <img src="{{ pkg.category.get_flyer_url }}" alt="{{ pkg.category.name }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+              {% else %}
+                <span style="font-size: 1.25rem;">🎁</span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--color-green-primary); font-size: 1.05rem;">
+              {{ pkg.name }}
+            </div>
+            {% if pkg.subtitle %}
+            <div style="font-size: 0.85rem; color: #4b5563; font-style: italic;">
+              {{ pkg.subtitle }}
+            </div>
+            {% endif %}
+            <div style="font-size: 0.78rem; color: var(--color-text-muted); font-family: monospace;">
+              code: {{ pkg.slug }}
+            </div>
+          </td>
+          <td>
+            <span class="meta-chip format" style="font-size: 0.8rem; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
+              {{ pkg.category.name|default:"Non classé" }}
+            </span>
+          </td>
+          <td>
+            <div style="font-weight: 800; font-size: 1.05rem; color: #1b8100;">
+              {{ pkg.get_price_display }}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-muted);">/ personne</div>
+          </td>
+          <td>
+            {% if pkg.highlight %}
+              <span class="meta-chip" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-weight: 700; font-size: 0.75rem;">
+                ⭐ Best-Seller
+              </span>
+            {% endif %}
+            {% if pkg.badge %}
+              <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem;">{{ pkg.badge }}</div>
+            {% endif %}
+          </td>
+          <td>
+            {% if pkg.transport_included %}
+              <span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8rem; color: #047857; font-weight: 600;">
+                🚌 Incluse
+              </span>
+            {% else %}
+              <span style="font-size: 0.8rem; color: #9ca3af;">Non</span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-size: 0.85rem; font-weight: 600; color: #374151;">
+              {{ pkg.features|length }} activité{{ pkg.features|length|pluralize }}
+            </span>
+          </td>
+          <td>
+            {% if pkg.is_active %}
+              <span style="background: #dcfce7; color: #15803d; padding: 0.25rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 700;">
+                ● En ligne
+              </span>
+            {% else %}
+              <span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.65rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600;">
+                ○ Inactif
+              </span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <div class="dash-actions-row">
+              <a href="{% url 'packages' %}#card-{{ pkg.slug }}" target="_blank" class="action-btn view" title="Voir sur le site public">
+                👁️ Voir
+              </a>
+              {% if can_change or is_superuser %}
+              <a href="{% url 'dashboard:package_edit' package_id=pkg.id %}" class="action-btn edit" title="Modifier ce package">
+                ✏️ Modifier
+              </a>
+              {% endif %}
+              {% if can_delete or is_superuser %}
+              <a href="{% url 'dashboard:package_delete' package_id=pkg.id %}" class="action-btn delete" title="Supprimer ce package">
+                🗑️ Supprimer
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 4rem; color: var(--color-text-muted);">
+    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">🎁</div>
+    <h3>Aucun package trouvé</h3>
+    <p style="margin-top: 0.5rem;">Aucun package ne correspond à votre recherche ou filtre.</p>
+    {% if can_add or is_superuser %}
+    <div style="margin-top: 1.5rem;">
+      <a href="{% url 'dashboard:package_add' %}" class="btn-dash-primary">Créer un nouveau package</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Drag & Drop Interactive JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const tableBody = document.getElementById('packages-table-body');
+  if (!tableBody) return;
+
+  const reorderUrl = "{% url 'dashboard:package_reorder' %}";
+  let draggedRow = null;
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('reorder-toast');
+    const toastMsg = document.getElementById('reorder-toast-msg');
+    const toastIcon = document.getElementById('reorder-toast-icon');
+    if (!toast) return;
+
+    toast.style.background = isError ? '#991b1b' : '#064e3b';
+    toastIcon.textContent = isError ? '⚠️' : '✅';
+    toastMsg.textContent = message;
+    toast.style.display = 'flex';
+
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 3200);
+  }
+
+  function updateVisualBadges() {
+    const rows = tableBody.querySelectorAll('.sortable-pkg-row');
+    rows.forEach((row, idx) => {
+      const badge = row.querySelector('.row-order-badge');
+      if (badge) {
+        badge.textContent = idx;
+      }
+    });
+  }
+
+  function saveNewOrder() {
+    const rows = tableBody.querySelectorAll('.sortable-pkg-row');
+    const orderIds = Array.from(rows).map(row => row.getAttribute('data-package-id'));
+
+    updateVisualBadges();
+
+    fetch(reorderUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken,
+      },
+      body: JSON.stringify({ order: orderIds })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        showToast(data.message || "Ordre des packages mis à jour avec succès !");
+      } else {
+        showToast(data.message || "Erreur lors de la mise à jour de l'ordre.", true);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast("Erreur réseau lors de l'enregistrement de l'ordre.", true);
+    });
+  }
+
+  // Row Drag and Drop Events
+  const rows = tableBody.querySelectorAll('.sortable-pkg-row');
+  rows.forEach(row => {
+    row.addEventListener('dragstart', function(e) {
+      draggedRow = this;
+      this.style.opacity = '0.45';
+      this.style.background = '#eafbe7';
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.getAttribute('data-package-id'));
+    });
+
+    row.addEventListener('dragend', function() {
+      this.style.opacity = '1';
+      this.style.background = '';
+      tableBody.querySelectorAll('.sortable-pkg-row').forEach(r => {
+        r.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      draggedRow = null;
+    });
+
+    row.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (!draggedRow || draggedRow === this) return;
+
+      const bounding = this.getBoundingClientRect();
+      const offset = bounding.y + (bounding.height / 2);
+      if (e.clientY - offset > 0) {
+        this.classList.remove('drag-over-top');
+        this.classList.add('drag-over-bottom');
+      } else {
+        this.classList.remove('drag-over-bottom');
+        this.classList.add('drag-over-top');
+      }
+    });
+
+    row.addEventListener('dragleave', function() {
+      this.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    row.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over-top', 'drag-over-bottom');
+      if (!draggedRow || draggedRow === this) return;
+
+      const bounding = this.getBoundingClientRect();
+      const offset = bounding.y + (bounding.height / 2);
+      if (e.clientY - offset > 0) {
+        tableBody.insertBefore(draggedRow, this.nextSibling);
+      } else {
+        tableBody.insertBefore(draggedRow, this);
+      }
+
+      saveNewOrder();
+    });
+  });
+
+  // Up/Down Arrow buttons for quick moves
+  tableBody.addEventListener('click', function(e) {
+    const upBtn = e.target.closest('.btn-move-up');
+    const downBtn = e.target.closest('.btn-move-down');
+    
+    if (upBtn) {
+      const row = upBtn.closest('.sortable-pkg-row');
+      const prev = row.previousElementSibling;
+      if (prev && prev.classList.contains('sortable-pkg-row')) {
+        tableBody.insertBefore(row, prev);
+        saveNewOrder();
+      }
+    } else if (downBtn) {
+      const row = downBtn.closest('.sortable-pkg-row');
+      const next = row.nextElementSibling;
+      if (next && next.classList.contains('sortable-pkg-row')) {
+        tableBody.insertBefore(next, row);
+        saveNewOrder();
+      }
+    }
+  });
+});
+</script>
+
+<style>
+.sortable-pkg-row.drag-over-top td {
+  border-top: 3px solid var(--color-green-primary) !important;
+}
+.sortable-pkg-row.drag-over-bottom td {
+  border-bottom: 3px solid var(--color-green-primary) !important;
+}
+.btn-drag-handle:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+.btn-drag-handle:active {
+  cursor: grabbing !important;
+}
+.btn-arrow-move:hover {
+  color: var(--color-green-primary) !important;
+  transform: scale(1.2);
+}
+</style>
+{% endblock %}

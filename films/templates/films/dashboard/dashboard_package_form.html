@@ -1,0 +1,341 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}
+{% if action == 'create' %}Créer un Package{% else %}Modifier : {{ package.name }}{% endif %} | Dashboard United Cinema
+{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_list' %}" style="color:var(--color-green-primary);">Packages</a> &nbsp;›&nbsp; 
+<strong>{% if action == 'create' %}Nouveau Package{% else %}Modifier : {{ package.name }}{% endif %}</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">
+      {% if action == 'create' %}✨ Créer un Nouveau Package / Formule{% else %}✏️ Modifier : {{ package.name }}{% endif %}
+    </h1>
+    <p class="dash-subtitle">
+      Renseignez les détails, tarifs et activités incluses dans cette formule.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    {% if action == 'edit' %}
+    <a href="{% url 'packages' %}#card-{{ package.slug }}" target="_blank" class="btn-dash-ghost">
+      <span>👁️ Voir sur le site</span>
+    </a>
+    {% endif %}
+    <a href="{% url 'dashboard:package_list' %}" class="btn-dash-ghost">
+      <span>← Retour à la liste</span>
+    </a>
+  </div>
+</div>
+
+<div class="film-form-grid" style="display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1.2fr); gap: 1.5rem; align-items: start;">
+  <!-- Form Card (Left) -->
+  <div class="film-form-card dash-section-card" style="padding: 2rem;">
+    <form action="{% if action == 'create' %}{% url 'dashboard:package_add' %}{% else %}{% url 'dashboard:package_edit' package_id=package.id %}{% endif %}" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert-item alert-error" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+        <div>
+          <strong>Veuillez corriger les erreurs suivantes :</strong>
+          <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}</strong> : {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Section 1 : Informations du Package -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📌 1. Informations du Package</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label class="form-label" for="id_package_name">
+          <span class="form-label-text"><strong>Nom du Package</strong> <span style="color:#dc2626;">*</span></span>
+        </label>
+        {{ form.name }}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_package_subtitle">
+            <span class="form-label-text">Sous-titre descriptif</span>
+          </label>
+          {{ form.subtitle }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            ex: 1 personne, 2 personnes, Fraîcheur & Bien-être...
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_package_slug">
+            <span class="form-label-text">Identifiant technique (Slug)</span>
+          </label>
+          {{ form.slug }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            Optionnel. Laisser vide pour générer automatiquement.
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_package_tagline">
+          <span class="form-label-text">Slogan / Phrase d'accroche</span>
+        </label>
+        {{ form.tagline }}
+      </div>
+
+      <!-- Section 2 : Catégorie de Rattachement (Classement Organisationnel) -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📂 2. Catégorie de Rattachement (Classement)</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 1.25rem; position: relative; z-index: 5;">
+        <label class="form-label" for="id_package_category" style="cursor: pointer;">
+          <span class="form-label-text"><strong>Choisir la Catégorie parente</strong> <span style="color:#dc2626;">*</span></span>
+        </label>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px;">
+            {{ form.category }}
+          </div>
+          <a href="{% url 'dashboard:package_category_list' %}" target="_blank" class="btn-dash-ghost" style="white-space: nowrap; font-size: 0.85rem; padding: 0.55rem 0.95rem;">
+            <span>📂 Gérer les catégories ↗</span>
+          </a>
+        </div>
+        <div style="font-size: 0.82rem; color: #475569; margin-top: 0.65rem; line-height: 1.45;">
+          ℹ️ <strong>Rôle de la catégorie :</strong> Sert à classer le package dans la section correspondante sur le site (Loisirs & Évasion, Beauté & Spa, Week-end Détente). <em>Ce champ est un regroupement logique, totalement indépendant du champ image ci-dessous.</em>
+        </div>
+      </div>
+
+      <!-- Section 3 : Champ Image / Affiche Propre au Package -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>🖼️ 3. Champ Image / Affiche Spécifique du Package</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem; position: relative; z-index: 1;">
+        <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap; background: #fbfdfa; border: 1.5px dashed #059669; border-radius: var(--radius-md); padding: 1.25rem;">
+          <!-- Image Preview Box -->
+          <div id="image-preview-box" style="width: 140px; height: 120px; border-radius: 8px; border: 1px solid #cbd5e1; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative;">
+            {% if package.image %}
+              <img id="image-preview-elem" src="{{ package.image.url }}" alt="{{ package.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% elif package.category and package.category.get_flyer_url %}
+              <img id="image-preview-elem" src="{{ package.category.get_flyer_url }}" alt="{{ package.category.name }}" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+              <span id="inherited-badge" style="position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #fff; font-size: 0.65rem; text-align: center; border-radius: 4px; padding: 2px;">Flyer Catégorie</span>
+            {% else %}
+              <div id="image-placeholder-elem" style="text-align: center; color: #94a3b8; font-size: 0.78rem;">
+                <div style="font-size: 1.75rem; line-height: 1.2;">🎁</div>
+                <span>Pas d'image</span>
+              </div>
+              <img id="image-preview-elem" src="" alt="Aperçu" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+            {% endif %}
+          </div>
+
+          <!-- File Input & Instructions -->
+          <div style="flex: 1; min-width: 240px;">
+            <label class="form-label" for="id_package_image" style="margin-bottom: 0.35rem;">
+              <span class="form-label-text"><strong>Téléverser l'image du package</strong></span>
+            </label>
+            {{ form.image }}
+            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.5rem; line-height: 1.45;">
+              Format JPG, PNG ou WEBP. Cette image s'affichera directement en bannière sur la carte du package et dans le tableau de bord.<br>
+              {% if package.image %}
+                <span style="color: #047857; font-weight: 700;">✓ Image propre enregistrée :</span> <a href="{{ package.image.url }}" target="_blank" style="color: var(--color-green-primary); text-decoration: underline;">Ouvrir l'image</a>
+              {% else %}
+                <span style="color: #b8860b;"><em>Aucune image personnalisée : le visuel de la catégorie parente est actuellement affiché par défaut.</em></span>
+              {% endif %}
+            </div>
+
+            <!-- Option to sync with category flyer -->
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.85rem; padding: 0.55rem 0.85rem; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; cursor: pointer;">
+              <input type="checkbox" name="sync_category_flyer" value="1" class="custom-task-checkbox">
+              <span style="font-size: 0.84rem; font-weight: 700; color: #065f46;">🔄 Utiliser également cette image comme grande affiche / flyer officiel de la formule</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4 : Tarifs & Badges -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>💰 4. Tarification & Badges</span>
+        </h3>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_package_price">
+            <span class="form-label-text"><strong>Tarif par personne (FCFA)</strong> <span style="color:#dc2626;">*</span></span>
+          </label>
+          {{ form.price }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            Chiffre uniquement, ex: 5000, 10000, 130000.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_package_price_display">
+            <span class="form-label-text">Affichage personnalisé du prix</span>
+          </label>
+          {{ form.price_display }}
+          <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+            ex: 5 000 FCFA. (Calculé si vide).
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_package_badge">
+          <span class="form-label-text">Badge / Étiquette mise en avant</span>
+        </label>
+        {{ form.badge }}
+        <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+          ex: Formule Conviviale, ⭐ Best-Seller Tout Inclus, 👑 VIP Spa
+        </div>
+      </div>
+
+      <!-- Section 5 : Activités et Prestations Incluses -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>🎯 5. Prestations & Activités incluses</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_package_features">
+          <span class="form-label-text"><strong>Liste des activités (une par ligne)</strong></span>
+        </label>
+        {{ form.features_text }}
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.5rem; font-size: 0.82rem; color: #475569; line-height: 1.5;">
+          💡 <strong>Format recommandé :</strong> <code>Icône | Nom | Description | (VIP optionnel)</code><br>
+          <em>Exemple :</em><br>
+          <code>🏊‍♂️ | PISCINE | Accès extérieur au bassin</code><br>
+          <code>🎬 | CINÉMA | Séance grand écran Dolby au choix</code><br>
+          <code>🥽 | VR | Réalité virtuelle Game Zone | vip</code><br>
+          <code>🚌 | TRANSPORT | Navette aller-retour (dès 8 pers.) | vip</code>
+        </div>
+      </div>
+
+      <!-- Section 6 : Options & Visibilité -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>⚙️ 6. Options & Paramètres</span>
+        </h3>
+      </div>
+
+      <div style="background: #fdfbf7; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem; display: flex; flex-direction: column; gap: 0.85rem;">
+        <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #1f2937;">
+          {{ form.highlight }}
+          <span>⭐ Mettre en avant ce package (Bordure dorée & Style Best-seller)</span>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #1f2937;">
+          {{ form.transport_included }}
+          <span>🚌 Navette aller-retour incluse (Affiche le badge "Navette Incluse")</span>
+        </label>
+
+        <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #1f2937;">
+          {{ form.is_active }}
+          <span>🟢 Visible immédiatement sur le site public</span>
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 2rem; max-width: 250px;">
+        <label class="form-label" for="id_package_order">
+          <span class="form-label-text">Ordre d'affichage</span>
+        </label>
+        {{ form.order }}
+        <div style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+          0 = en premier, 1 = deuxième, etc.
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div style="display: flex; gap: 1rem; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+        <button type="submit" class="btn-dash-primary" style="padding: 0.85rem 2rem; font-size: 1.05rem;">
+          💾 {% if action == 'create' %}Créer le Package{% else %}Enregistrer les modifications{% endif %}
+        </button>
+        <a href="{% url 'dashboard:package_list' %}" class="btn-dash-ghost" style="padding: 0.85rem 1.5rem;">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Helpful Info Box (Right) -->
+  <div class="dash-section-card" style="padding: 1.5rem; background: #fafafa; position: sticky; top: 1.5rem;">
+    <h3 style="font-size: 1.05rem; color: #1f2937; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>💡 Guide Pratique</span>
+    </h3>
+    <p style="font-size: 0.85rem; color: #4b5563; line-height: 1.5; margin-bottom: 1rem;">
+      Tous les packages créés ou modifiés ici se synchronisent immédiatement avec la page publique <strong>/packages/</strong> et la <strong>modale de réservation directe WhatsApp</strong>.
+    </p>
+
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+      <h4 style="font-size: 0.9rem; color: var(--color-green-primary); margin-bottom: 0.5rem;">
+        📍 Catégories disponibles :
+      </h4>
+      <ul style="font-size: 0.82rem; color: #6b7280; padding-left: 1.25rem; line-height: 1.6;">
+        <li><strong>Loisirs & Évasion :</strong> Affiché dans la première section avec flyer loisirs (Cinéma, Piscine, Billard, VR...).</li>
+        <li><strong>Spa & Bien-être :</strong> Affiché dans la grille bien-être (Fitness, Hammam, Sauna, Massage...).</li>
+        <li><strong>Séjour / Week-end :</strong> Formules hôtelières ou offres spéciales.</li>
+      </ul>
+    </div>
+
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+      <h4 style="font-size: 0.9rem; color: #b8860b; margin-bottom: 0.5rem;">
+        ✨ Astuce Prestations :
+      </h4>
+      <p style="font-size: 0.82rem; color: #6b7280; line-height: 1.5;">
+        Ajoutez <code>| vip</code> à la fin d'une ligne pour surligner cette prestation en doré (ex: réalité virtuelle ou massage exclusif).
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const imageInput = document.getElementById('id_package_image');
+  const previewImg = document.getElementById('image-preview-elem');
+  const placeholder = document.getElementById('image-placeholder-elem');
+  const inheritedBadge = document.getElementById('inherited-badge');
+
+  if (imageInput && previewImg) {
+    imageInput.addEventListener('change', function(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          previewImg.src = evt.target.result;
+          previewImg.style.display = 'block';
+          if (placeholder) {
+            placeholder.style.display = 'none';
+          }
+          if (inheritedBadge) {
+            inheritedBadge.style.display = 'none';
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

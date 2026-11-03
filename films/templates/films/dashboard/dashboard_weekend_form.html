@@ -1,0 +1,218 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Gestion Week-end Détente | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_list' %}" style="color:var(--color-green-primary);">Packages</a> &nbsp;›&nbsp; 
+<strong>Week-end Détente Hôtel ★★★★</strong>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page-header">
+  <div>
+    <h1 class="dash-title">🏨 Formule Week-end Détente (02 Nuitées - Hôtel ★★★★)</h1>
+    <p class="dash-subtitle">
+      Gérez les informations, prestations incluses et la grille des 6 tarifs selon la taille des familles.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="{% url 'packages' %}#section-weekend" target="_blank" class="btn-dash-ghost" style="border-color: var(--color-gold-primary); color: #b8860b; font-weight: 700;">
+      <span>👁️ Voir sur le site public</span>
+    </a>
+    <a href="{% url 'dashboard:package_list' %}" class="btn-dash-ghost">
+      <span>← Retour aux Packages</span>
+    </a>
+  </div>
+</div>
+
+<div class="film-form-grid" style="display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1.2fr); gap: 1.5rem; align-items: start;">
+  <!-- Form Card (Left) -->
+  <div class="film-form-card dash-section-card" style="padding: 2rem;">
+    <form action="{% url 'dashboard:weekend_update' %}" method="POST">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert-item alert-error" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+        <div>
+          <strong>Veuillez corriger les erreurs suivantes :</strong>
+          <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}</strong> : {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Section 1 : Informations Générales -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>📌 1. Présentation de la Formule</span>
+        </h3>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_weekend_title">
+            <span class="form-label-text"><strong>Titre de la formule</strong> <span style="color:#dc2626;">*</span></span>
+          </label>
+          {{ form.title }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_weekend_duration">
+            <span class="form-label-text"><strong>Durée du séjour</strong> <span style="color:#dc2626;">*</span></span>
+          </label>
+          {{ form.duration }}
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+        <div class="form-group">
+          <label class="form-label" for="id_weekend_badge">
+            <span class="form-label-text">Badge / Étiquette d'en-tête</span>
+          </label>
+          {{ form.badge }}
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_weekend_tagline">
+            <span class="form-label-text">Slogan / Phrase d'accroche</span>
+          </label>
+          {{ form.tagline }}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_weekend_notice">
+          <span class="form-label-text">Bandeau d'information / Réservation</span>
+        </label>
+        {{ form.notice }}
+      </div>
+
+      <!-- Section 2 : Grille Tarifaire des 6 Paliers -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: #b8860b; display: flex; align-items: center; gap: 0.5rem;">
+          <span>💰 2. Grille des 6 Tarifs Week-end Détente (02 Nuitées)</span>
+        </h3>
+        <p style="font-size: 0.82rem; color: #6b7280; margin-top: 0.25rem;">
+          Indiquez le montant numérique en FCFA pour chaque formule d'hébergement.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.75rem;">
+        <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #e5e7eb;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👤 Single (1 pers.)</strong></span>
+          </label>
+          {{ form.price_single }}
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">02 nuitées</div>
+        </div>
+
+        <div class="form-group" style="background: #fefce8; padding: 1rem; border-radius: var(--radius-sm); border: 2px solid #fde047;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👥 Couple (2 pers.) ⭐</strong></span>
+          </label>
+          {{ form.price_couple }}
+          <div style="font-size: 0.75rem; color: #854d0e; margin-top: 0.25rem;">Best-Seller recommandé</div>
+        </div>
+
+        <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #e5e7eb;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👨‍👩‍👦 Famille 3 pers.</strong></span>
+          </label>
+          {{ form.price_famille_3 }}
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">02 nuitées</div>
+        </div>
+
+        <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #e5e7eb;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👨‍👩‍👧‍👦 Famille 4 pers.</strong></span>
+          </label>
+          {{ form.price_famille_4 }}
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">02 nuitées</div>
+        </div>
+
+        <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #e5e7eb;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👨‍👩‍👧‍👧 Famille 5 pers.</strong></span>
+          </label>
+          {{ form.price_famille_5 }}
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">02 nuitées</div>
+        </div>
+
+        <div class="form-group" style="background: #f9fafb; padding: 1rem; border-radius: var(--radius-sm); border: 1px solid #e5e7eb;">
+          <label class="form-label">
+            <span class="form-label-text"><strong>👨‍👩‍👧‍👦 Famille 6 pers.</strong></span>
+          </label>
+          {{ form.price_famille_6 }}
+          <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem;">02 nuitées</div>
+        </div>
+      </div>
+
+      <!-- Section 3 : Activités et Prestations Incluses -->
+      <div style="margin-bottom: 1.75rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1.15rem; color: var(--color-green-primary); display: flex; align-items: center; gap: 0.5rem;">
+          <span>🎯 3. Prestations incluses dans le séjour</span>
+        </h3>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.75rem;">
+        <label class="form-label" for="id_weekend_features">
+          <span class="form-label-text"><strong>Liste des prestations (une par ligne)</strong></span>
+        </label>
+        {{ form.features_text }}
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.5rem; font-size: 0.82rem; color: #475569; line-height: 1.5;">
+          💡 <strong>Format :</strong> <code>Icône | Nom | Description | (VIP optionnel)</code><br>
+          <em>Exemple :</em> <code>🛏️ | CHAMBRE STANDARD | Chambre tout confort pour 02 nuitées</code>
+        </div>
+      </div>
+
+      <!-- Section 4 : Activation -->
+      <div style="background: #fdfbf7; border: 1px solid #fef3c7; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem;">
+        <label style="display: flex; align-items: center; gap: 0.65rem; cursor: pointer; font-size: 0.95rem; font-weight: 600; color: #1f2937;">
+          {{ form.is_active }}
+          <span>🟢 Afficher cette offre Week-end Détente sur le site public</span>
+        </label>
+      </div>
+
+      <!-- Form Actions -->
+      <div style="display: flex; gap: 1rem; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 1.5rem;">
+        <button type="submit" class="btn-dash-primary" style="padding: 0.85rem 2.25rem; font-size: 1.05rem;">
+          💾 Enregistrer les Tarifs Week-end
+        </button>
+        <a href="{% url 'dashboard:package_list' %}" class="btn-dash-ghost" style="padding: 0.85rem 1.5rem;">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Helpful Info Box (Right) -->
+  <div class="dash-section-card" style="padding: 1.5rem; background: #fafafa; position: sticky; top: 1.5rem;">
+    <h3 style="font-size: 1.05rem; color: #1f2937; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+      <span>🏨 À Propos de cette Formule</span>
+    </h3>
+    <p style="font-size: 0.85rem; color: #4b5563; line-height: 1.5; margin-bottom: 1rem;">
+      Le séjour <strong>Week-end Détente</strong> est une formule spéciale de 02 nuitées (du Vendredi au Dimanche) combinant hébergement 4 étoiles, restauration complète, cinéma DOLBY, piscine, fitness et soins bien-être.
+    </p>
+
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+      <h4 style="font-size: 0.9rem; color: var(--color-green-primary); margin-bottom: 0.5rem;">
+        ⚡ Synchronisation Instantanée :
+      </h4>
+      <p style="font-size: 0.82rem; color: #6b7280; line-height: 1.5;">
+        Dès que vous modifiez un prix ici (par exemple le tarif Single ou Couple), les nouveaux montants apparaissent automatiquement :
+      </p>
+      <ul style="font-size: 0.82rem; color: #6b7280; padding-left: 1.25rem; line-height: 1.6; margin-top: 0.5rem;">
+        <li>Sur la grille de la page <strong>/packages/</strong></li>
+        <li>Dans les options du formulaire de réservation WhatsApp</li>
+        <li>Dans les messages pré-remplis envoyés à la réception</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'films/dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Supprimer Catégorie : {{ category.name }} | Dashboard United Cinema{% endblock %}
+
+{% block breadcrumb %}
+<a href="{% url 'dashboard:home' %}" style="color:var(--color-green-primary);">Accueil</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_list' %}" style="color:var(--color-green-primary);">Packages</a> &nbsp;›&nbsp; 
+<a href="{% url 'dashboard:package_category_list' %}" style="color:var(--color-green-primary);">Catégories</a> &nbsp;›&nbsp; 
+<strong>Supprimer</strong>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 2rem auto;">
+  <div class="dash-section-card" style="padding: 2.5rem; text-align: center; border-top: 4px solid #dc2626;">
+    <div style="font-size: 3.5rem; margin-bottom: 1rem;">⚠️</div>
+    <h1 style="font-size: 1.5rem; color: #991b1b; font-weight: 800; margin-bottom: 0.75rem;">
+      Supprimer la Catégorie ?
+    </h1>
+    <p style="color: #4b5563; font-size: 1rem; margin-bottom: 1.5rem; line-height: 1.5;">
+      Êtes-vous certain de vouloir supprimer définitivement la catégorie <br>
+      <strong style="color: #1f2937; font-size: 1.15rem;">« {{ category.name }} »</strong> ?
+    </p>
+
+    {% if category.packages.count > 0 %}
+    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin-bottom: 2rem; color: #991b1b; font-size: 0.9rem; text-align: left;">
+      <strong>Attention :</strong> Cette catégorie contient actuellement <strong>{{ category.packages.count }} package(s)</strong> ({{ category.packages.all|join:", " }}). Si vous supprimez cette catégorie, ces packages seront également supprimés.
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'dashboard:package_category_delete' category_id=category.id %}">
+      {% csrf_token %}
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{% url 'dashboard:package_category_list' %}" class="btn-dash-ghost" style="padding: 0.75rem 1.75rem;">
+          Annuler
+        </a>
+        <button type="submit" class="btn-dash-primary" style="background: #dc2626; border-color: #b91c1c; padding: 0.75rem 2rem; font-weight: 700;">
+          🗑️ Oui, Supprimer Définitivement
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
