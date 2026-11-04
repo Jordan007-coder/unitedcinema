@@ -107,8 +107,12 @@
           {% for pkg in loisir_packages %}
           <div class="package-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.slug|default:pkg.id }}">
             {% if pkg.get_image_url %}
-            <div class="package-card-banner">
+            <div class="package-card-banner" onclick="openFlyerLightbox('{{ pkg.get_image_url }}', '{{ pkg.name|escapejs }}')" title="Cliquer pour agrandir le visuel">
               <img src="{{ pkg.get_image_url }}" alt="{{ pkg.name }}" class="package-card-banner-img" loading="lazy">
+              <div class="package-card-banner-overlay">
+                <span class="banner-zoom-icon">🔍</span>
+                <span class="banner-zoom-text">Agrandir l'affiche</span>
+              </div>
             </div>
             {% endif %}
             <div class="package-card-top">
@@ -202,8 +206,12 @@
           {% for pkg in spa_packages %}
           <div class="package-card spa-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.slug|default:pkg.id }}">
             {% if pkg.get_image_url %}
-            <div class="package-card-banner">
+            <div class="package-card-banner" onclick="openFlyerLightbox('{{ pkg.get_image_url }}', '{{ pkg.name|escapejs }}')" title="Cliquer pour agrandir le visuel">
               <img src="{{ pkg.get_image_url }}" alt="{{ pkg.name }}" class="package-card-banner-img" loading="lazy">
+              <div class="package-card-banner-overlay">
+                <span class="banner-zoom-icon">🔍</span>
+                <span class="banner-zoom-text">Agrandir l'affiche</span>
+              </div>
             </div>
             {% endif %}
             <div class="package-card-top">
@@ -307,8 +315,12 @@
       {% for pkg in other_packages %}
       <div class="package-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.slug|default:pkg.id }}">
         {% if pkg.get_image_url %}
-        <div class="package-card-banner">
+        <div class="package-card-banner" onclick="openFlyerLightbox('{{ pkg.get_image_url }}', '{{ pkg.name|escapejs }}')" title="Cliquer pour agrandir le visuel">
           <img src="{{ pkg.get_image_url }}" alt="{{ pkg.name }}" class="package-card-banner-img" loading="lazy">
+          <div class="package-card-banner-overlay">
+            <span class="banner-zoom-icon">🔍</span>
+            <span class="banner-zoom-text">Agrandir l'affiche</span>
+          </div>
         </div>
         {% endif %}
         <div class="package-card-top">
@@ -423,8 +435,12 @@
           {% for pkg in weekend_packages %}
           <div class="package-card spa-card {% if pkg.highlight %}package-card-highlighted{% endif %}" id="card-{{ pkg.slug|default:pkg.id }}">
             {% if pkg.get_image_url %}
-            <div class="package-card-banner">
+            <div class="package-card-banner" onclick="openFlyerLightbox('{{ pkg.get_image_url }}', '{{ pkg.name|escapejs }}')" title="Cliquer pour agrandir le visuel">
               <img src="{{ pkg.get_image_url }}" alt="{{ pkg.name }}" class="package-card-banner-img" loading="lazy">
+              <div class="package-card-banner-overlay">
+                <span class="banner-zoom-icon">🔍</span>
+                <span class="banner-zoom-text">Agrandir l'affiche</span>
+              </div>
             </div>
             {% endif %}
             <div class="package-card-top">
